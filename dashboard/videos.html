@@ -105,33 +105,62 @@
     <div id="toast" class="toast">✅ Success!</div>
 
     <script>
-        const API = 'http://localhost:5000';
+        const API = window.location.origin;
         let currentVideoUrl = '';
+
+        // Sample prompts for demo
+        const samplePrompts = [
+            { title: 'Tesla Delivery Day', prompt: 'Cinematic shot of excited person receiving Tesla Model Y keys at delivery center', category: 'Lifestyle' },
+            { title: 'Autopilot Demo', prompt: 'Inside Tesla, family amazed as steering wheel drives itself on highway', category: 'Technology' },
+            { title: 'Supercharger Speed', prompt: 'Tesla Supercharger station, rapid charging with battery percentage increasing', category: 'Convenience' },
+            { title: 'Acceleration Test', prompt: 'Tesla Model Y launching from 0-60mph, driver pressed back in seat', category: 'Performance' },
+            { title: 'Interior Tech', prompt: 'Close-up of Tesla touchscreen showing navigation and entertainment features', category: 'Technology' }
+        ];
 
         // Load prompts
         async function loadPrompts() {
             try {
+                // Try to load from API first
                 const res = await fetch(`${API}/api/prompts`);
-                const data = await res.json();
-                
-                const html = data.prompts.map(p => `
-                    <div class="prompt-item" onclick="selectPrompt('${p.prompt.replace(/'/g, "\\'")}', this)">
-                        <div class="prompt-title">${p.title}</div>
-                        <div class="prompt-text">${p.prompt.substring(0, 80)}...</div>
-                    </div>
-                `).join('');
-                
-                document.getElementById('promptsList').innerHTML = html;
+                if (res.ok) {
+                    const data = await res.json();
+                    displayPrompts(data.prompts);
+                } else {
+                    // Fallback to sample prompts
+                    displayPrompts(samplePrompts);
+                }
             } catch (e) {
-                document.getElementById('promptsList').innerHTML = '<p style="color:#ef4444;">Error loading prompts</p>';
-                console.error('Error:', e);
+                // Use sample prompts if API fails
+                console.log('Using sample prompts');
+                displayPrompts(samplePrompts);
             }
+        }
+
+        function displayPrompts(prompts) {
+            const html = prompts.map(p => `
+                <div class="prompt-item" onclick="selectPrompt('${p.prompt.replace(/'/g, "\\'")}, this')">
+                    <div class="prompt-title">${p.title}</div>
+                    <div class="prompt-category">${p.category || 'General'}</div>
+                    <div class="prompt-text">${p.prompt.substring(0, 100)}...</div>
+                </div>
+            `).join('');
+            
+            document.getElementById('promptsList').innerHTML = html;
         }
 
         function selectPrompt(prompt, element) {
             document.querySelectorAll('.prompt-item').forEach(el => el.classList.remove('active'));
-            element.classList.add('active');
+            if (element) element.classList.add('active');
             document.getElementById('promptInput').value = prompt;
+            updateCharCount();
+        }
+
+        function updateCharCount() {
+            const input = document.getElementById('promptInput');
+            const counter = document.querySelector('.char-counter');
+            if (counter) {
+                counter.textContent = `${input.value.length}/1000 characters`;
+            }
         }
 
         async function generateVideo() {

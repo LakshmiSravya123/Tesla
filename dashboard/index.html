@@ -149,25 +149,32 @@
 
     <script>
         let chart;
-        const API_BASE = 'http://localhost:5000';
+        const API_BASE = window.location.origin;
 
         async function loadTrends() {
             try {
-                const res = await fetch("/data.json?_=" + Date.now());
+                const res = await fetch("./data.json?_=" + Date.now());
+                if (!res.ok) throw new Error('Failed to load');
                 const data = await res.json();
                 const list = document.getElementById('trendsList');
                 list.innerHTML = '';
-                data.trending_hashtags.slice(0, 3).forEach(h => {
-                    list.innerHTML += `<div class="trend-item"><span>${h.tag}</span><span>${(h.views/1000000).toFixed(1)}M views</span></div>`;
-                });
+                if (data.trending_hashtags && data.trending_hashtags.length > 0) {
+                    data.trending_hashtags.slice(0, 3).forEach(h => {
+                        list.innerHTML += `<div class="trend-item"><span>${h.tag}</span><span>${(h.views/1000000).toFixed(1)}M views</span></div>`;
+                    });
+                } else {
+                    list.innerHTML = '<div style="color:#9ca3af;padding:10px;">No trends available</div>';
+                }
             } catch (e) {
-                document.getElementById('trendsList').innerHTML = 'Unable to load trends';
+                console.error('Trends error:', e);
+                document.getElementById('trendsList').innerHTML = '<div style="color:#9ca3af;padding:10px;">Trends data unavailable</div>';
             }
         }
 
         async function loadData() {
             try {
-                const res = await fetch('/data.json?_=' + Date.now());
+                const res = await fetch('./data.json?_=' + Date.now());
+                if (!res.ok) throw new Error('Failed to load data');
                 const data = await res.json();
 
                 const vals = Object.values(data.campaign_tracking || {});
