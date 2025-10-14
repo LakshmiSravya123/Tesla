@@ -10,3 +10,4 @@ requests==2.31.0
 yfinance==0.2.66
 alpha-vantage==3.0.0
 replicate==0.25.1
+gunicorn==21.2.0
