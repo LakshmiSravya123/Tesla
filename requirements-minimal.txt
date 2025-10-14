@@ -1,8 +1,8 @@
-# Minimal requirements for Render free tier (no ML/pandas)
-flask==3.0.0
-flask-cors==4.0.0
-openai==1.12.0
+# Ultra-minimal requirements for Render
+Flask==3.0.0
+Flask-CORS==4.0.0
 python-dotenv==1.0.0
 requests==2.31.0
-replicate==0.25.1
 gunicorn==21.2.0
+openai>=1.0.0
+replicate>=0.20.0
