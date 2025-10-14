@@ -1,0 +1,28 @@
+# Ignore Python files and dependencies
+*.py
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.venv/
+*.egg-info/
+
+# Ignore large files and directories
+generated_videos/
+old_files/
+api/__pycache__/
+
+# Ignore environment and config files
+.env
+.env.example
+*.log
+*.pid
+
+# Ignore development files
+START.sh
+deploy.sh
+video_gen.pid
+
+# Keep only dashboard files
+# Everything else is ignored, only dashboard/ will be deployed
