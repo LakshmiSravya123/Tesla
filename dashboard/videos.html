@@ -120,25 +120,26 @@
         // Load prompts
         async function loadPrompts() {
             try {
-                // Try to load from API first
+                console.log('Fetching prompts from:', `${API}/api/prompts`);
                 const res = await fetch(`${API}/api/prompts`);
+                console.log('Response status:', res.status);
                 if (res.ok) {
                     const data = await res.json();
+                    console.log('Prompts loaded:', data);
                     displayPrompts(data.prompts);
                 } else {
-                    // Fallback to sample prompts
+                    console.log('API failed, using fallback');
                     displayPrompts(samplePrompts);
                 }
             } catch (e) {
-                // Use sample prompts if API fails
-                console.log('Using sample prompts');
+                console.error('Error loading prompts:', e);
                 displayPrompts(samplePrompts);
             }
         }
 
         function displayPrompts(prompts) {
             const html = prompts.map(p => `
-                <div class="prompt-item" onclick="selectPrompt('${p.prompt.replace(/'/g, "\\'")}, this')">
+                <div class="prompt-item" onclick='selectPrompt(\`${p.prompt}\`, this)'>
                     <div class="prompt-title">${p.title}</div>
                     <div class="prompt-category">${p.category || 'General'}</div>
                     <div class="prompt-text">${p.prompt.substring(0, 100)}...</div>

@@ -89,10 +89,13 @@
 
         async function loadMarketData() {
             try {
+                console.log('Fetching market data from:', `${API}/api/market-data`);
                 const res = await fetch(`${API}/api/market-data`);
+                console.log('Response status:', res.status);
                 if (!res.ok) throw new Error('Failed to fetch market data');
                 
                 const data = await res.json();
+                console.log('Market data loaded:', data);
                 
                 // Update stats grid
                 updateStatsGrid(data.tesla_stock);
