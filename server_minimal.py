@@ -183,7 +183,7 @@ def market_data():
 
 @app.route('/api/generate-video', methods=['POST'])
 def generate_video():
-    """Generate video using Replicate API"""
+    """Generate video using Stable Video Diffusion via Replicate"""
     try:
         data = request.json or {}
         prompt = data.get('prompt', '').strip()
@@ -196,24 +196,49 @@ def generate_video():
         
         import replicate
         
-        output = replicate.run(
-            "anotherjesse/zeroscope-v2-xl:9f747673945c62801b13b84701c783929c0ee784e4748ec062204894dda1a351",
+        # Step 1: Generate image with Stable Diffusion XL
+        print(f"Generating image for: {prompt}")
+        image_output = replicate.run(
+            "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
             input={
                 "prompt": prompt,
-                "num_frames": 24,
-                "num_inference_steps": 25,
-                "guidance_scale": 17.5
+                "width": 1024,
+                "height": 576,
+                "num_outputs": 1
             }
         )
         
-        video_url = output if isinstance(output, str) else output[0]
+        image_url = image_output[0] if isinstance(image_output, list) else image_output
+        print(f"Image generated: {image_url}")
+        
+        # Step 2: Generate video from image with Stable Video Diffusion
+        print("Generating video from image...")
+        video_output = replicate.run(
+            "stability-ai/stable-video-diffusion:3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
+            input={
+                "input_image": image_url,
+                "cond_aug": 0.02,
+                "decoding_t": 7,
+                "video_length": "14_frames_with_svd",
+                "sizing_strategy": "maintain_aspect_ratio",
+                "motion_bucket_id": 127,
+                "frames_per_second": 6
+            }
+        )
+        
+        video_url = video_output if isinstance(video_output, str) else video_output[0] if isinstance(video_output, list) else str(video_output)
+        print(f"Video generated: {video_url}")
         
         return jsonify({
             "success": True,
             "video_url": video_url,
-            "prompt": prompt
+            "image_url": image_url,
+            "prompt": prompt,
+            "model": "Stable Video Diffusion",
+            "info": "Generated with SDXL + SVD"
         })
     except Exception as e:
+        print(f"Error generating video: {e}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
