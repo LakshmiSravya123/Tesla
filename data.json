@@ -1,0 +1,69 @@
+{
+  "campaign_tracking": {
+    "delivery_campaign": {
+      "clicks": 3245,
+      "conversions": 89,
+      "revenue_estimate": 267000,
+      "ad_spend": 15000
+    },
+    "autopilot_campaign": {
+      "clicks": 4120,
+      "conversions": 115,
+      "revenue_estimate": 345000,
+      "ad_spend": 22000
+    },
+    "supercharger_campaign": {
+      "clicks": 2890,
+      "conversions": 67,
+      "revenue_estimate": 201000,
+      "ad_spend": 12000
+    },
+    "performance_campaign": {
+      "clicks": 3567,
+      "conversions": 92,
+      "revenue_estimate": 276000,
+      "ad_spend": 18000
+    }
+  },
+  "trending_videos": [
+    {
+      "title": "Tesla Model Y Delivery Experience",
+      "views": 125000,
+      "likes": 8900,
+      "link": "https://www.tiktok.com/tag/teslamodely",
+      "creator": "@teslaowner2024"
+    },
+    {
+      "title": "Autopilot Highway Test",
+      "views": 89000,
+      "likes": 6700,
+      "link": "https://www.tiktok.com/tag/teslaautopilot",
+      "creator": "@evlife"
+    }
+  ],
+  "sentiment_analysis": [
+    {"text": "Amazing car!", "sentiment": "positive"},
+    {"text": "Love the autopilot", "sentiment": "positive"},
+    {"text": "Best EV ever", "sentiment": "positive"},
+    {"text": "Expensive but worth it", "sentiment": "neutral"},
+    {"text": "Great performance", "sentiment": "positive"}
+  ],
+  "trend_report": {
+    "top_viral_topics": [
+      ["tesla_model_y", 45],
+      ["autopilot_demo", 38],
+      ["ev_charging", 32],
+      ["tesla_tech", 28],
+      ["electric_cars", 25]
+    ]
+  },
+  "video_strategy": {
+    "video_concepts": [
+      {"title": "Delivery Day", "duration": "15s"},
+      {"title": "Autopilot Demo", "duration": "20s"},
+      {"title": "Supercharger Speed", "duration": "18s"},
+      {"title": "Performance Test", "duration": "25s"},
+      {"title": "Interior Tech", "duration": "20s"}
+    ]
+  }
+}

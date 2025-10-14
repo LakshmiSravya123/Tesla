@@ -1,0 +1,42 @@
+[
+  {
+    "id": "tesla_delivery",
+    "title": "Tesla Model Y Delivery Day",
+    "preview_image": "https://oaidalleapiprodscus.blob.core.windows.net/private/org-hcDjy8DfWrAL5gCGnO19LcrR/user-aF9yvv2A9vK5wwP2KWfHkKWx/img-yaNeM8yHG7GmXnV1wwVqcfON.png?st=2025-10-10T18%3A04%3A17Z&se=2025-10-10T20%3A04%3A17Z&sp=r&sv=2024-08-04&sr=b&rscd=inline&rsct=image/png&skoid=77e5a8ec-6bd1-4477-8afc-16703a64f029&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-10-10T07%3A12%3A52Z&ske=2025-10-11T07%3A12%3A52Z&sks=b&skv=2024-08-04&sig=l4vJhgXoAJeWCkhfnf8U89BNyDlPXCwzc9RP8ta6yhM%3D",
+    "prompt": "A 15-second cinematic video of a young professional receiving their new Tesla Model Y. The scene shows genuine excitement as they get the keys, with natural lighting and handheld camera style. Close-up of their face showing pure joy, then pan to the sleek white Tesla Model Y. They sit in the driver's seat with a huge smile. Use diverse, generic face for broad appeal. Upbeat music, text overlay: 'POV: Your dream car just arrived'",
+    "status": "preview_ready",
+    "note": "Full video generation available when Sora API launches"
+  },
+  {
+    "id": "autopilot_demo",
+    "title": "Family Autopilot Experience",
+    "preview_image": "https://oaidalleapiprodscus.blob.core.windows.net/private/org-hcDjy8DfWrAL5gCGnO19LcrR/user-aF9yvv2A9vK5wwP2KWfHkKWx/img-LOEx3Lvp2STHBmCmziRe5wg6.png?st=2025-10-10T18%3A04%3A33Z&se=2025-10-10T20%3A04%3A33Z&sp=r&sv=2024-08-04&sr=b&rscd=inline&rsct=image/png&skoid=f1dafa11-a0c2-4092-91d4-10981fbda051&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-10-10T18%3A52%3A25Z&ske=2025-10-11T18%3A52%3A25Z&sks=b&skv=2024-08-04&sig=vcnZy3CRi%2BNLLYWpA6KMJQtkotlFCUXSWSLopKszCZU%3D",
+    "prompt": "A 20-second video showing a diverse family experiencing Tesla Autopilot for the first time. POV from backseat showing parents and kids amazed as the car drives itself on the highway. Camera switches between the steering wheel (hands off) and their amazed faces. Kids cheering, parents smiling with wonder. Futuristic electronic music, text overlay: 'When the car drives itself'",
+    "status": "preview_ready",
+    "note": "Full video generation available when Sora API launches"
+  },
+  {
+    "id": "supercharger",
+    "title": "Supercharger Speed Demo",
+    "preview_image": "https://oaidalleapiprodscus.blob.core.windows.net/private/org-hcDjy8DfWrAL5gCGnO19LcrR/user-aF9yvv2A9vK5wwP2KWfHkKWx/img-18GloKifKe9ur2ny3Mi33IgQ.png?st=2025-10-10T18%3A04%3A52Z&se=2025-10-10T20%3A04%3A52Z&sp=r&sv=2024-08-04&sr=b&rscd=inline&rsct=image/png&skoid=77e5a8ec-6bd1-4477-8afc-16703a64f029&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-10-10T15%3A08%3A24Z&ske=2025-10-11T15%3A08%3A24Z&sks=b&skv=2024-08-04&sig=9IEe7qodrkDuwGZWJnhu2r6wWtAMgFuFwiffVIyfT48%3D",
+    "prompt": "An 18-second educational video showing Tesla Supercharger experience. Time-lapse of plugging in at a modern Supercharger station. Close-up of the plug connecting, wide shot of the sleek station, phone app showing rapid charging progress. Generic person gives thumbs up. Chill electronic background music, text overlay: '15 mins = 200 miles of range'",
+    "status": "preview_ready",
+    "note": "Full video generation available when Sora API launches"
+  },
+  {
+    "id": "acceleration",
+    "title": "Tesla vs Gas Car Race",
+    "preview_image": "https://oaidalleapiprodscus.blob.core.windows.net/private/org-hcDjy8DfWrAL5gCGnO19LcrR/user-aF9yvv2A9vK5wwP2KWfHkKWx/img-gFXwB6rOpwcz19AzFTbk2eAP.png?st=2025-10-10T18%3A05%3A08Z&se=2025-10-10T20%3A05%3A08Z&sp=r&sv=2024-08-04&sr=b&rscd=inline&rsct=image/png&skoid=ed3ea2f9-5e38-44be-9a1b-7c1e65e4d54f&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-10-10T18%3A27%3A58Z&ske=2025-10-11T18%3A27%3A58Z&sks=b&skv=2024-08-04&sig=f9Sobddi/7BhV8dNIVMighScRMhpu36G2PT3SsLvt8g%3D",
+    "prompt": "A 25-second cinematic video of a side-by-side drag race between a Tesla Model Y and a luxury gas car. Slow-motion, multiple camera angles. Split screen showing both cars at the starting line, then Tesla instantly pulling ahead with intense acceleration. Bass drop on acceleration, driver smirking as Tesla is far ahead. Text overlay: '0-60 in 3.5 seconds'",
+    "status": "preview_ready",
+    "note": "Full video generation available when Sora API launches"
+  },
+  {
+    "id": "interior_tech",
+    "title": "Tesla Interior Tech Showcase",
+    "preview_image": "https://oaidalleapiprodscus.blob.core.windows.net/private/org-hcDjy8DfWrAL5gCGnO19LcrR/user-aF9yvv2A9vK5wwP2KWfHkKWx/img-1rJutg6qy4RwXIiIGIM0Trle.png?st=2025-10-10T18%3A05%3A24Z&se=2025-10-10T20%3A05%3A24Z&sp=r&sv=2024-08-04&sr=b&rscd=inline&rsct=image/png&skoid=cc612491-d948-4d2e-9821-2683df3719f5&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-10-10T13%3A54%3A12Z&ske=2025-10-11T13%3A54%3A12Z&sks=b&skv=2024-08-04&sig=/Dtfy7MFr/dSZB3l4EcvqP%2BwSfo5kc4Bfnx86Xb9dWQ%3D",
+    "prompt": "A 20-second video showcasing Tesla's minimalist interior and tech. Clean, Apple-style aesthetic with a diverse person exploring the massive touchscreen. Close-ups of the screen showing Netflix, gaming, climate controls. Panoramic glass roof view. Minimal electronic music, sophisticated vibe. Text overlay: 'No buttons. Just vibes.'",
+    "status": "preview_ready",
+    "note": "Full video generation available when Sora API launches"
+  }
+]

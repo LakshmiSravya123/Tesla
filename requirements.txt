@@ -1,0 +1,12 @@
+# Tesla Sales Dashboard - Python Dependencies
+flask==3.0.0
+flask-cors==4.0.0
+openai==1.12.0
+scikit-learn==1.4.0
+pandas==2.2.0
+numpy==1.26.3
+python-dotenv==1.0.0
+requests==2.31.0
+yfinance==0.2.66
+alpha-vantage==3.0.0
+replicate==0.25.1

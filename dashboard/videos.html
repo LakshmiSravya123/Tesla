@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Video Generation - Tesla</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0a0e27; color: #e4e7eb; }
+        .sidebar { position: fixed; left: 0; top: 0; width: 260px; height: 100vh; background: linear-gradient(180deg, #1a1f3a 0%, #0f1729 100%); border-right: 1px solid rgba(255,255,255,0.05); padding: 30px 20px; }
+        .logo { font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 40px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; margin-bottom: 8px; border-radius: 10px; color: #9ca3af; text-decoration: none; transition: 0.2s; }
+        .nav-item:hover, .nav-item.active { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
+        .main-content { margin-left: 260px; padding: 30px 40px; }
+        .header h1 { font-size: 2rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+        .header p { color: #9ca3af; margin-bottom: 30px; }
+        .grid { display: grid; grid-template-columns: 400px 1fr; gap: 30px; }
+        .prompts-panel { background: #1e293b; border-radius: 16px; padding: 24px; height: fit-content; }
+        .prompts-panel h2 { color: #fff; margin-bottom: 20px; font-size: 1.2rem; }
+        .prompt-item { background: rgba(255,255,255,0.05); border-radius: 10px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; }
+        .prompt-item:hover { background: rgba(99, 102, 241, 0.1); }
+        .prompt-item.active { background: rgba(99, 102, 241, 0.2); border: 1px solid #6366f1; }
+        .prompt-title { font-weight: 600; color: #fff; margin-bottom: 8px; }
+        .prompt-text { font-size: 0.85rem; color: #9ca3af; }
+        .generator-panel { background: #1e293b; border-radius: 16px; padding: 30px; }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; color: #9ca3af; margin-bottom: 10px; font-size: 0.9rem; }
+        .prompt-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 14px; color: #fff; font-family: 'Inter', sans-serif; resize: vertical; min-height: 100px; }
+        .prompt-input:focus { outline: none; border-color: #6366f1; }
+        .btn-generate { width: 100%; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: #fff; border: none; padding: 14px; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4); }
+        .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .video-output { margin-top: 30px; display: none; }
+        .video-output.show { display: block; }
+        .video-output h3 { color: #fff; margin-bottom: 16px; }
+        .video-container { background: #000; border-radius: 10px; overflow: hidden; }
+        .video-container video { width: 100%; }
+        .btn-download { margin-top: 16px; width: 100%; background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; }
+        .loading { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10, 14, 39, 0.95); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .loading.show { display: flex; }
+        .loading-content { text-align: center; background: #1e293b; padding: 40px; border-radius: 16px; }
+        .spinner { width: 60px; height: 60px; border: 4px solid rgba(99, 102, 241, 0.1); border-top-color: #6366f1; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { color: #fff; font-size: 1.2rem; margin-bottom: 8px; }
+        .loading-subtext { color: #9ca3af; }
+        .toast { position: fixed; top: 20px; right: 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; padding: 16px 24px; border-radius: 10px; display: none; z-index: 2000; }
+        .toast.show { display: block; animation: slideIn 0.3s; }
+        @keyframes slideIn { from { transform: translateX(400px); } to { transform: translateX(0); } }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">⚡ TeslaTrend</div>
+        <nav>
+            <a href="index.html" class="nav-item">📊 Dashboard</a>
+            <a href="videos.html" class="nav-item active">🎬 AI Videos</a>
+            <a href="analytics.html" class="nav-item">📈 Analytics</a>
+            <a href="campaigns.html" class="nav-item">🎯 Campaigns</a>
+            <a href="ai_analytics.html" class="nav-item">🤖 AI Analytics</a>
+            <a href="settings.html" class="nav-item">⚙️ Settings</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>AI Video Generation</h1>
+            <p>Create Tesla marketing videos with MiniMax video-01</p>
+        </div>
+
+        <div class="grid">
+            <div class="prompts-panel">
+                <h2>💡 Prompt Library</h2>
+                <div id="promptsList">Loading...</div>
+            </div>
+
+            <div class="generator-panel">
+                <div class="input-group">
+                    <label>🎯 Your Prompt</label>
+                    <textarea id="promptInput" class="prompt-input" placeholder="Describe your Tesla video..."></textarea>
+                </div>
+
+                <button id="generateBtn" class="btn-generate" onclick="generateVideo()">
+                    🎬 Generate Video
+                </button>
+
+                <div id="videoOutput" class="video-output">
+                    <h3>🎞️ Generated Video</h3>
+                    <div class="video-container">
+                        <video id="videoPlayer" controls autoplay loop></video>
+                    </div>
+                    <button class="btn-download" onclick="downloadVideo()">💾 Download MP4</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="loading" class="loading">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div class="loading-text">Generating Video...</div>
+            <div id="loadingSubtext" class="loading-subtext">Please wait 30-60 seconds</div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">✅ Success!</div>
+
+    <script>
+        const API = 'http://localhost:5000';
+        let currentVideoUrl = '';
+
+        // Load prompts
+        async function loadPrompts() {
+            try {
+                const res = await fetch(`${API}/api/prompts`);
+                const data = await res.json();
+                
+                const html = data.prompts.map(p => `
+                    <div class="prompt-item" onclick="selectPrompt('${p.prompt.replace(/'/g, "\\'")}', this)">
+                        <div class="prompt-title">${p.title}</div>
+                        <div class="prompt-text">${p.prompt.substring(0, 80)}...</div>
+                    </div>
+                `).join('');
+                
+                document.getElementById('promptsList').innerHTML = html;
+            } catch (e) {
+                document.getElementById('promptsList').innerHTML = '<p style="color:#ef4444;">Error loading prompts</p>';
+                console.error('Error:', e);
+            }
+        }
+
+        function selectPrompt(prompt, element) {
+            document.querySelectorAll('.prompt-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            document.getElementById('promptInput').value = prompt;
+        }
+
+        async function generateVideo() {
+            const prompt = document.getElementById('promptInput').value.trim();
+            if (!prompt) {
+                alert('Please enter a prompt');
+                return;
+            }
+
+            const btn = document.getElementById('generateBtn');
+            const loading = document.getElementById('loading');
+            const subtext = document.getElementById('loadingSubtext');
+            const output = document.getElementById('videoOutput');
+
+            btn.disabled = true;
+            btn.textContent = '⏳ Generating...';
+            loading.classList.add('show');
+            subtext.textContent = 'Step 1: Generating image with DALL-E 3...';
+
+            try {
+                const res = await fetch(`${API}/api/generate-video`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({prompt: prompt})
+                });
+
+                if (!res.ok) {
+                    const error = await res.json();
+                    throw new Error(error.error || 'Generation failed');
+                }
+
+                subtext.textContent = 'Step 2: Creating MP4 video...';
+                const data = await res.json();
+
+                currentVideoUrl = `${API}${data.video_url}`;
+                
+                // Show video
+                const video = document.getElementById('videoPlayer');
+                video.src = currentVideoUrl;
+                output.classList.add('show');
+
+                loading.classList.remove('show');
+                showToast('✅ Video generated successfully!');
+
+            } catch (e) {
+                loading.classList.remove('show');
+                showToast('❌ Error: ' + e.message, true);
+                console.error('Generation error:', e);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🎬 Generate Video';
+            }
+        }
+
+        function downloadVideo() {
+            if (currentVideoUrl) {
+                const a = document.createElement('a');
+                a.href = currentVideoUrl;
+                a.download = currentVideoUrl.split('/').pop();
+                a.click();
+                showToast('💾 Downloading video...');
+            }
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            if (isError) toast.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+                toast.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+            }, 3000);
+        }
+
+        loadPrompts();
+    </script>
+</body>
+</html>

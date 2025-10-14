@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Video Generation - Tesla Sales Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0e27; color: #e4e7eb; line-height: 1.6; }
+        .sidebar { position: fixed; left: 0; top: 0; width: 260px; height: 100vh; background: linear-gradient(180deg, #1a1f3a 0%, #0f1729 100%); border-right: 1px solid rgba(255,255,255,0.05); padding: 30px 20px; z-index: 100; }
+        .logo { font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; margin-bottom: 8px; border-radius: 10px; color: #9ca3af; text-decoration: none; transition: all 0.2s; }
+        .nav-item:hover, .nav-item.active { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
+        .main-content { margin-left: 260px; padding: 30px 40px; }
+        .header { margin-bottom: 30px; }
+        .header h1 { font-size: 2rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+        .header p { color: #9ca3af; font-size: 0.95rem; }
+        .status-badge { display: inline-block; padding: 6px 16px; border-radius: 16px; font-size: 0.85rem; margin-top: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; }
+        .video-grid { display: grid; grid-template-columns: 400px 1fr; gap: 30px; }
+        .prompt-sidebar { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 24px; height: fit-content; max-height: 80vh; overflow-y: auto; }
+        .prompt-sidebar h2 { font-size: 1.2rem; color: #fff; margin-bottom: 20px; }
+        .prompt-list { max-height: 500px; overflow-y: auto; }
+        .prompt-list::-webkit-scrollbar { width: 5px; }
+        .prompt-list::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.3); border-radius: 3px; }
+        .prompt-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 14px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; }
+        .prompt-item:hover { background: rgba(99, 102, 241, 0.1); border-color: rgba(99, 102, 241, 0.3); transform: translateX(3px); }
+        .prompt-item.active { background: rgba(99, 102, 241, 0.15); border-color: #6366f1; }
+        .prompt-title { font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 6px; }
+        .prompt-category { display: inline-block; background: rgba(99, 102, 241, 0.15); color: #818cf8; padding: 3px 8px; border-radius: 6px; font-size: 0.7rem; margin-bottom: 8px; }
+        .prompt-text { font-size: 0.8rem; color: #9ca3af; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .video-section { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 30px; }
+        .input-section { margin-bottom: 24px; }
+        .input-section label { display: block; font-size: 0.85rem; color: #9ca3af; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .prompt-input { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 14px; color: #fff; font-size: 0.95rem; font-family: 'Inter', sans-serif; resize: vertical; min-height: 120px; }
+        .prompt-input:focus { outline: none; border-color: #6366f1; background: rgba(255,255,255,0.05); }
+        .char-counter { text-align: right; font-size: 0.8rem; color: #6b7280; margin-top: 4px; }
+        .generate-btn { width: 100%; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: #fff; border: none; padding: 14px; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .generate-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4); }
+        .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .output-section { margin-top: 30px; }
+        .output-section h3 { font-size: 1.1rem; color: #fff; margin-bottom: 16px; }
+        .video-container { background: #000; border-radius: 10px; overflow: hidden; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; position: relative; }
+        .video-container video { width: 100%; height: 100%; object-fit: contain; }
+        .video-placeholder { color: #6b7280; font-size: 1rem; }
+        .video-info { margin-top: 12px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 0.85rem; color: #9ca3af; }
+        .download-btn { margin-top: 16px; width: 100%; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 12px; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .download-btn:hover { background: rgba(16, 185, 129, 0.25); }
+        .loading { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10, 14, 39, 0.95); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(5px); }
+        .loading.active { display: flex; }
+        .loading-content { text-align: center; padding: 40px; background: #1e293b; border-radius: 16px; border: 1px solid rgba(99, 102, 241, 0.3); }
+        .spinner { width: 60px; height: 60px; border: 4px solid rgba(99, 102, 241, 0.1); border-top-color: #6366f1; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { font-size: 1.2rem; color: #fff; margin-bottom: 8px; font-weight: 600; }
+        .loading-subtext { font-size: 0.95rem; color: #9ca3af; }
+        .progress-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 16px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #8b5cf6); width: 0%; transition: width 0.3s; }
+        .toast { position: fixed; top: 20px; right: 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; padding: 16px 24px; border-radius: 10px; box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4); z-index: 2000; display: none; font-weight: 500; }
+        .toast.show { display: block; animation: slideIn 0.3s; }
+        .toast.error { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); box-shadow: 0 8px 30px rgba(239, 68, 68, 0.4); }
+        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .error-message { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; padding: 12px; border-radius: 8px; margin-top: 12px; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo"><span>⚡</span><span>TeslaTrend</span></div>
+        <nav>
+            <a href="index.html" class="nav-item"><span>📊</span><span>Dashboard</span></a>
+            <a href="videos.html" class="nav-item active"><span>🎬</span><span>AI Videos</span></a>
+            <a href="analytics.html" class="nav-item"><span>📈</span><span>Analytics</span></a>
+            <a href="campaigns.html" class="nav-item"><span>🎯</span><span>Campaigns</span></a>
+            <a href="ai_analytics.html" class="nav-item"><span>🤖</span><span>AI Statistics</span></a>
+            <a href="settings.html" class="nav-item"><span>⚙️</span><span>Settings</span></a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>AI Video Generation</h1>
+            <p>Create stunning Tesla marketing videos with AI-powered generation</p>
+            <span class="status-badge" id="statusBadge">🔴 Checking API...</span>
+        </div>
+
+        <div class="video-grid">
+            <div class="prompt-sidebar">
+                <h2>💡 Prompt Library</h2>
+                <div class="prompt-list" id="promptList">
+                    <div style="text-align:center;padding:20px;color:#6b7280;">Loading prompts...</div>
+                </div>
+            </div>
+
+            <div class="video-section">
+                <div class="input-section">
+                    <label>🎯 Enter Your Prompt</label>
+                    <textarea 
+                        class="prompt-input" 
+                        id="promptInput" 
+                        placeholder="Describe the Tesla video you want to create... Be specific about scenes, actions, and visual style."
+                        maxlength="1000"
+                        oninput="updateCharCounter()"
+                    ></textarea>
+                    <div class="char-counter" id="charCounter">0 / 1000 characters</div>
+                </div>
+
+                <button class="generate-btn" id="generateBtn" onclick="generateVideo()">
+                    🎬 Generate Video
+                </button>
+
+                <div class="output-section" id="outputSection" style="display:none;">
+                    <h3>🎞️ Generated Video</h3>
+                    <div class="video-container" id="videoContainer">
+                        <div class="video-placeholder">Your video will appear here</div>
+                    </div>
+                    <div class="video-info" id="videoInfo" style="display:none;"></div>
+                    <button class="download-btn" id="downloadBtn" onclick="downloadVideo()" style="display:none;">
+                        💾 Download Video
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div class="loading-text">Generating Video...</div>
+            <div class="loading-subtext" id="loadingSubtext">Initializing AI models...</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">✅ Video generated successfully!</div>
+
+    <script>
+        const API = 'http://localhost:5001';
+        let currentVideoUrl = '';
+        let currentVideoData = null;
+
+        async function checkAPIHealth() {
+            const badge = document.getElementById('statusBadge');
+            try {
+                const res = await fetch(`${API}/api/health`);
+                const data = await res.json();
+                if (data.status === 'healthy') {
+                    badge.className = 'status-badge';
+                    badge.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                    badge.textContent = `🟢 ${data.services.video_model}`;
+                } else {
+                    throw new Error('API unhealthy');
+                }
+            } catch (e) {
+                badge.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+                badge.textContent = '🔴 API Offline';
+                console.error('API health check failed:', e);
+            }
+        }
+
+        async function loadPrompts() {
+            const list = document.getElementById('promptList');
+            try {
+                const res = await fetch(`${API}/api/prompts`);
+                if (!res.ok) throw new Error('Failed to load prompts');
+                
+                const data = await res.json();
+                list.innerHTML = '';
+
+                if (!data.prompts || data.prompts.length === 0) {
+                    list.innerHTML = '<p style="color:#6b7280;text-align:center;padding:20px;">No prompts available</p>';
+                    return;
+                }
+
+                data.prompts.forEach((item, i) => {
+                    const div = document.createElement('div');
+                    div.className = 'prompt-item';
+                    div.innerHTML = `
+                        <div class="prompt-title">${escapeHtml(item.title)}</div>
+                        <div class="prompt-category">${escapeHtml(item.category || 'General')}</div>
+                        <div class="prompt-text" title="${escapeHtml(item.prompt)}">${escapeHtml(item.prompt)}</div>
+                    `;
+                    div.onclick = () => selectPrompt(item.prompt, div);
+                    list.appendChild(div);
+                });
+            } catch (e) {
+                list.innerHTML = '<div class="error-message">⚠️ Error loading prompts. Make sure the API server is running.</div>';
+                console.error('Error loading prompts:', e);
+            }
+        }
+
+        function selectPrompt(prompt, element) {
+            document.getElementById('promptInput').value = prompt;
+            document.querySelectorAll('.prompt-item').forEach(p => p.classList.remove('active'));
+            element.classList.add('active');
+            updateCharCounter();
+        }
+
+        function updateCharCounter() {
+            const input = document.getElementById('promptInput');
+            const counter = document.getElementById('charCounter');
+            const length = input.value.length;
+            counter.textContent = `${length} / 1000 characters`;
+            counter.style.color = length > 900 ? '#ef4444' : '#6b7280';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function generateVideo() {
+            const prompt = document.getElementById('promptInput').value.trim();
+            if (!prompt) {
+                showToast('❌ Please enter a prompt or select one from the library', 'error');
+                return;
+            }
+
+            if (prompt.length > 1000) {
+                showToast('❌ Prompt is too long (max 1000 characters)', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('generateBtn');
+            const loading = document.getElementById('loading');
+            const subtext = document.getElementById('loadingSubtext');
+            const progressFill = document.getElementById('progressFill');
+
+            btn.disabled = true;
+            btn.textContent = '⏳ Generating...';
+            loading.classList.add('active');
+            progressFill.style.width = '10%';
+            subtext.textContent = 'Step 1: Generating with AI...';
+
+            try {
+                setTimeout(() => { progressFill.style.width = '30%'; }, 500);
+                
+                const res = await fetch(`${API}/api/generate-video`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({prompt: prompt})
+                });
+
+                progressFill.style.width = '60%';
+                subtext.textContent = 'Step 2: Creating video file...';
+
+                if (!res.ok) {
+                    const error = await res.json();
+                    throw new Error(error.error || 'Generation failed');
+                }
+
+                const data = await res.json();
+                currentVideoData = data;
+                progressFill.style.width = '100%';
+
+                console.log('API Response:', data);
+
+                // Display result - ALWAYS show video if video_url exists
+                const container = document.getElementById('videoContainer');
+                const videoInfo = document.getElementById('videoInfo');
+                const downloadBtn = document.getElementById('downloadBtn');
+
+                if (data.video_url) {
+                    currentVideoUrl = `${API}${data.video_url}`;
+                    console.log('Loading video from:', currentVideoUrl);
+                    
+                    // Force video display
+                    container.innerHTML = `
+                        <video controls autoplay loop style="width:100%;height:100%;object-fit:contain;">
+                            <source src="${currentVideoUrl}" type="video/mp4">
+                            Your browser doesn't support video playback.
+                        </video>
+                    `;
+                    
+                    downloadBtn.style.display = 'block';
+                    downloadBtn.textContent = '💾 Download Video (MP4)';
+                } else {
+                    throw new Error('No video URL in response');
+                }
+
+                // Show video info
+                videoInfo.innerHTML = `
+                    <strong>Model:</strong> ${escapeHtml(data.model || 'Unknown')}<br>
+                    <strong>Video ID:</strong> ${escapeHtml(data.video_id || 'N/A')}
+                    ${data.note ? `<br><strong>💡 Note:</strong> ${escapeHtml(data.note)}` : ''}
+                `;
+                videoInfo.style.display = 'block';
+                document.getElementById('outputSection').style.display = 'block';
+
+                loading.classList.remove('active');
+                showToast('✅ Video generated successfully!', 'success');
+
+            } catch (e) {
+                loading.classList.remove('active');
+                showToast(`❌ Generation failed: ${e.message}`, 'error');
+                console.error('Generation error:', e);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🎬 Generate Video';
+                progressFill.style.width = '0%';
+            }
+        }
+
+        function downloadVideo() {
+            if (!currentVideoUrl) {
+                showToast('❌ No video to download', 'error');
+                return;
+            }
+
+            const a = document.createElement('a');
+            a.href = currentVideoUrl;
+            a.download = currentVideoUrl.split('/').pop();
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            showToast('💾 Download started...', 'success');
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show' + (type === 'error' ? ' error' : '');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            checkAPIHealth();
+            loadPrompts();
+            setInterval(checkAPIHealth, 30000);
+        });
+    </script>
+</body>
+</html>

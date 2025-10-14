@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tesla Sales Strategy Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0e27; color: #e4e7eb; line-height: 1.6; }
+        .sidebar { position: fixed; left: 0; top: 0; width: 260px; height: 100vh; background: linear-gradient(180deg, #1a1f3a 0%, #0f1729 100%); border-right: 1px solid rgba(255,255,255,0.05); padding: 30px 20px; z-index: 100; }
+        .logo { font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; margin-bottom: 8px; border-radius: 10px; color: #9ca3af; text-decoration: none; transition: all 0.2s; cursor: pointer; }
+        .nav-item:hover, .nav-item.active { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
+        .main-content { margin-left: 260px; padding: 30px 40px; min-height: 100vh; }
+        .header { margin-bottom: 40px; }
+        .header h1 { font-size: 2rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+        .header p { color: #9ca3af; font-size: 0.95rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 24px; transition: transform 0.2s, box-shadow 0.2s; }
+        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(99, 102, 241, 0.15); }
+        .stat-label { font-size: 0.85rem; color: #9ca3af; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-value { font-size: 2rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+        .stat-change { font-size: 0.85rem; color: #10b981; }
+        .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 30px; }
+        .card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 28px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .card-title { font-size: 1.25rem; font-weight: 600; color: #fff; }
+        .card-action { background: rgba(99, 102, 241, 0.1); color: #6366f1; border: none; padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
+        .card-action:hover { background: rgba(99, 102, 241, 0.2); }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .list-item:last-child { border-bottom: none; }
+        .list-title { font-weight: 500; color: #e4e7eb; }
+        .list-meta { font-size: 0.85rem; color: #9ca3af; }
+        .badge { background: rgba(99, 102, 241, 0.15); color: #818cf8; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 500; }
+        .badge.success { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .badge.warning { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+        .chart-container { position: relative; height: 300px; }
+        .trends-section { background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.1); border-radius: 12px; padding: 16px; margin-bottom: 20px; }
+        .trends-title { font-size: 0.9rem; color: #818cf8; margin-bottom: 12px; font-weight: 600; }
+        .trend-item { display: flex; justify-content: space-between; padding: 8px 0; color: #e4e7eb; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo"><span>⚡</span><span>TeslaTrend</span></div>
+        <nav>
+            <a href="index.html" class="nav-item active"><span>📊</span><span>Dashboard</span></a>
+            <a href="videos.html" class="nav-item"><span>🎬</span><span>AI Videos</span></a>
+            <a href="analytics.html" class="nav-item"><span>📈</span><span>Analytics</span></a>
+            <a href="campaigns.html" class="nav-item"><span>🎯</span><span>Campaigns</span></a>
+            <a href="settings.html" class="nav-item"><span>⚙️</span><span>Settings</span></a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>Sales Strategy Dashboard</h1>
+            <p>Real-time TikTok trends and campaign performance</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Clicks</div>
+                <div class="stat-value" id="totalClicks">-</div>
+                <div class="stat-change">↑ 12.5% from last week</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Conversions</div>
+                <div class="stat-value" id="totalConversions">-</div>
+                <div class="stat-change">↑ 8.2% from last week</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Conversion Rate</div>
+                <div class="stat-value" id="conversionRate">-</div>
+                <div class="stat-change">↑ 2.1% from last week</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Revenue</div>
+                <div class="stat-value" id="revenue">-</div>
+                <div class="stat-change">↑ 15.3% from last week</div>
+            </div>
+        </div>
+
+        <div class="trends-section">
+            <div class="trends-title">🔥 Live TikTok Trends</div>
+            <div id="trendsList">Loading trends...</div>
+        </div>
+
+        <div class="content-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Sentiment Analysis</h2>
+                    <button class="card-action" onclick="refreshData()">Refresh</button>
+                </div>
+                <div class="chart-container">
+                    <canvas id="sentimentChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Key Metrics</h2>
+                </div>
+                <div>
+                    <div class="list-item">
+                        <div>
+                            <div class="list-title">Trending Videos</div>
+                            <div class="list-meta">Active content</div>
+                        </div>
+                        <span class="badge" id="trendingCount">-</span>
+                    </div>
+                    <div class="list-item">
+                        <div>
+                            <div class="list-title">AI Video Concepts</div>
+                            <div class="list-meta">Ready to deploy</div>
+                        </div>
+                        <span class="badge success" id="conceptsCount">-</span>
+                    </div>
+                    <div class="list-item">
+                        <div>
+                            <div class="list-title">Active Campaigns</div>
+                            <div class="list-meta">Running now</div>
+                        </div>
+                        <span class="badge warning" id="campaignsCount">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Top Viral Topics</h2>
+                </div>
+                <div id="topicsList"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Video Concepts</h2>
+                    <a href="videos.html" class="card-action">View All →</a>
+                </div>
+                <div id="conceptsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chart;
+        const API_BASE = 'http://localhost:5000';
+
+        async function loadTrends() {
+            try {
+                const res = await fetch("/data.json?_=" + Date.now());
+                const data = await res.json();
+                const list = document.getElementById('trendsList');
+                list.innerHTML = '';
+                data.trending_hashtags.slice(0, 3).forEach(h => {
+                    list.innerHTML += `<div class="trend-item"><span>${h.tag}</span><span>${(h.views/1000000).toFixed(1)}M views</span></div>`;
+                });
+            } catch (e) {
+                document.getElementById('trendsList').innerHTML = 'Unable to load trends';
+            }
+        }
+
+        async function loadData() {
+            try {
+                const res = await fetch('/data.json?_=' + Date.now());
+                const data = await res.json();
+
+                const vals = Object.values(data.campaign_tracking || {});
+                const clicks = vals.reduce((s,v)=>s+(v.clicks||0),0);
+                const convs = vals.reduce((s,v)=>s+(v.conversions||0),0);
+                const rate = clicks ? ((convs/clicks)*100).toFixed(1) : '0';
+                const revenue = vals.reduce((s,v)=>s+(v.revenue_estimate||0),0);
+
+                document.getElementById('totalClicks').textContent = clicks.toLocaleString();
+                document.getElementById('totalConversions').textContent = convs.toLocaleString();
+                document.getElementById('conversionRate').textContent = rate + '%';
+                document.getElementById('revenue').textContent = '$' + (revenue/1000000).toFixed(2) + 'M';
+
+                document.getElementById('trendingCount').textContent = (data.trending_videos||[]).length;
+                document.getElementById('conceptsCount').textContent = (data.video_strategy?.video_concepts||[]).length;
+                document.getElementById('campaignsCount').textContent = Object.keys(data.campaign_tracking||{}).length;
+
+                const pos = (data.sentiment_analysis||[]).filter(x=>x.sentiment==='positive').length;
+                const neg = (data.sentiment_analysis||[]).filter(x=>x.sentiment==='negative').length;
+                const neu = (data.sentiment_analysis||[]).filter(x=>x.sentiment==='neutral').length;
+
+                const ctx = document.getElementById('sentimentChart').getContext('2d');
+                chart?.destroy();
+                chart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Positive', 'Negative', 'Neutral'],
+                        datasets: [{
+                            data: [pos, neg, neu],
+                            backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { color: '#9ca3af', padding: 20, font: { size: 12 } }
+                            }
+                        }
+                    }
+                });
+
+                const topicsList = document.getElementById('topicsList');
+                topicsList.innerHTML = '';
+                (data.trend_report?.top_viral_topics||[]).slice(0,5).forEach(([topic,count])=>{
+                    topicsList.innerHTML += `
+                        <div class="list-item">
+                            <div class="list-title">${topic.replaceAll('_',' ').replace(/\b\w/g, l => l.toUpperCase())}</div>
+                            <span class="badge">${count} mentions</span>
+                        </div>
+                    `;
+                });
+
+                const conceptsList = document.getElementById('conceptsList');
+                conceptsList.innerHTML = '';
+                (data.video_strategy?.video_concepts||[]).slice(0,3).forEach(c=>{
+                    conceptsList.innerHTML += `
+                        <div class="list-item">
+                            <div>
+                                <div class="list-title">${c.title}</div>
+                                <div class="list-meta">${c.duration||'~20s'}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        function refreshData() {
+            loadData();
+            loadTrends();
+        }
+
+        loadData();
+        loadTrends();
+        setInterval(refreshData, 30000);
+    </script>
+</body>
+</html>

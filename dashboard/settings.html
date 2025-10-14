@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0a0e27; color: #e4e7eb; }
+        .sidebar { position: fixed; left: 0; top: 0; width: 260px; height: 100vh; background: linear-gradient(180deg, #1a1f3a 0%, #0f1729 100%); border-right: 1px solid rgba(255,255,255,0.05); padding: 30px 20px; }
+        .logo { font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; margin-bottom: 8px; border-radius: 10px; color: #9ca3af; text-decoration: none; transition: all 0.2s; }
+        .nav-item:hover, .nav-item.active { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
+        .main-content { margin-left: 260px; padding: 30px 40px; }
+        .header h1 { font-size: 2rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+        .header p { color: #9ca3af; margin-bottom: 40px; }
+        .settings-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 28px; margin-bottom: 24px; }
+        .settings-title { font-size: 1.25rem; font-weight: 600; color: #fff; margin-bottom: 24px; }
+        .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .setting-item:last-child { border-bottom: none; }
+        .setting-label { font-weight: 500; color: #e4e7eb; }
+        .setting-desc { font-size: 0.85rem; color: #9ca3af; margin-top: 4px; }
+        .toggle { width: 48px; height: 24px; background: rgba(255,255,255,0.1); border-radius: 12px; position: relative; cursor: pointer; }
+        .toggle.active { background: #6366f1; }
+        .toggle-slider { width: 20px; height: 20px; background: #fff; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: transform 0.2s; }
+        .toggle.active .toggle-slider { transform: translateX(24px); }
+        .btn { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-size: 0.95rem; font-weight: 500; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo"><span>⚡</span><span>TeslaTrend</span></div>
+        <nav>
+            <a href="index.html" class="nav-item"><span>📊</span><span>Dashboard</span></a>
+            <a href="videos.html" class="nav-item"><span>🎬</span><span>AI Videos</span></a>
+            <a href="analytics.html" class="nav-item"><span>📈</span><span>Analytics</span></a>
+            <a href="campaigns.html" class="nav-item"><span>🎯</span><span>Campaigns</span></a>
+            <a href="settings.html" class="nav-item active"><span>⚙️</span><span>Settings</span></a>
+        </nav>
+    </div>
+    <div class="main-content">
+        <div class="header">
+            <h1>Settings</h1>
+            <p>Configure your platform</p>
+        </div>
+        <div class="settings-card">
+            <h2 class="settings-title">API Configuration</h2>
+            <div class="setting-item">
+                <div><div class="setting-label">OpenAI API Key</div><div class="setting-desc">For Sora2 video generation</div></div>
+                <button class="btn">Update</button>
+            </div>
+        </div>
+        <div class="settings-card">
+            <h2 class="settings-title">Notifications</h2>
+            <div class="setting-item">
+                <div><div class="setting-label">Email Alerts</div><div class="setting-desc">Campaign milestone notifications</div></div>
+                <div class="toggle active" onclick="this.classList.toggle('active')"><div class="toggle-slider"></div></div>
+            </div>
+            <div class="setting-item">
+                <div><div class="setting-label">Daily Reports</div><div class="setting-desc">Performance summaries</div></div>
+                <div class="toggle active" onclick="this.classList.toggle('active')"><div class="toggle-slider"></div></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
