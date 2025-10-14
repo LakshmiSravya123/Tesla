@@ -1,0 +1,8 @@
+{
+  "name": "tesla-dashboard",
+  "version": "1.0.0",
+  "description": "Tesla Sales Dashboard - Static Site",
+  "scripts": {
+    "build": "echo 'Static site - no build needed'"
+  }
+}
