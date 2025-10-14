@@ -141,7 +141,10 @@
             const html = prompts.map(p => `
                 <div class="prompt-item" onclick='selectPrompt(\`${p.prompt}\`, this)'>
                     <div class="prompt-title">${p.title}</div>
-                    <div class="prompt-category">${p.category || 'General'}</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin:5px 0;">
+                        <div class="prompt-category">${p.category || 'General'}</div>
+                        ${p.trend ? `<div style="font-size:0.8rem;color:#10b981;">${p.trend}</div>` : ''}
+                    </div>
                     <div class="prompt-text">${p.prompt.substring(0, 100)}...</div>
                 </div>
             `).join('');
