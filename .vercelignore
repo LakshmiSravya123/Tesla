@@ -26,3 +26,6 @@ video_gen.pid
 
 # Keep only dashboard files
 # Everything else is ignored, only dashboard/ will be deployed
+
+# Ignore Python requirements to prevent Flask detection
+requirements.txt
