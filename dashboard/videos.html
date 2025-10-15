@@ -105,7 +105,7 @@
     <div id="toast" class="toast">✅ Success!</div>
 
     <script>
-        const API = "https://tesla-dashboard-api.onrender.com";
+        const API = "http://localhost:5000";
         let currentVideoUrl = '';
 
         // Sample prompts for demo
@@ -138,8 +138,10 @@
         }
 
         function displayPrompts(prompts) {
-            const html = prompts.map(p => `
-                <div class="prompt-item" onclick='selectPrompt(\`${p.prompt}\`, this)'>
+            const html = prompts.map(p => {
+                const escapedPrompt = p.prompt.replace(/'/g, "&apos;").replace(/"/g, "&quot;");
+                return `
+                <div class="prompt-item" onclick="selectPrompt('${escapedPrompt}', this)">
                     <div class="prompt-title">${p.title}</div>
                     <div style="display:flex;justify-content:space-between;align-items:center;margin:5px 0;">
                         <div class="prompt-category">${p.category || 'General'}</div>
@@ -147,7 +149,7 @@
                     </div>
                     <div class="prompt-text">${p.prompt.substring(0, 100)}...</div>
                 </div>
-            `).join('');
+            `}).join('');
             
             document.getElementById('promptsList').innerHTML = html;
         }
