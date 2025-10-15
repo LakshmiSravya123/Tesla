@@ -155,9 +155,21 @@ def trends():
         "last_updated": datetime.now().isoformat()
     })
 
+# Cache for market data
+_market_data_cache = None
+_market_data_cache_time = None
+
 @app.route('/api/market-data')
 def market_data():
-    """Return real-time market data from Yahoo Finance"""
+    """Return real-time market data from Yahoo Finance with caching"""
+    global _market_data_cache, _market_data_cache_time
+    
+    # Return cached data if less than 5 minutes old
+    if _market_data_cache and _market_data_cache_time:
+        age = (datetime.now() - _market_data_cache_time).seconds
+        if age < 300:  # 5 minutes cache
+            return jsonify(_market_data_cache)
+    
     try:
         import yfinance as yf
         
@@ -199,7 +211,7 @@ def market_data():
             except:
                 pass
         
-        return jsonify({
+        result = {
             "tesla_stock": {
                 "price": round(current_price, 2),
                 "change": round(change, 2),
@@ -217,14 +229,28 @@ def market_data():
             },
             "data_source": "Yahoo Finance (Real-time)",
             "last_updated": datetime.now().isoformat()
-        })
+        }
+        
+        # Cache the result
+        _market_data_cache = result
+        _market_data_cache_time = datetime.now()
+        
+        return jsonify(result)
         
     except Exception as e:
         print(f"Error fetching market data: {e}")
-        # Return error message instead of fake data
+        
+        # If we have cached data, return it even if expired
+        if _market_data_cache:
+            print("Returning cached data due to API error")
+            cached_result = _market_data_cache.copy()
+            cached_result["data_source"] = "Yahoo Finance (Cached - API rate limited)"
+            return jsonify(cached_result)
+        
+        # Return error message if no cache available
         return jsonify({
             "error": "Failed to fetch real-time data",
-            "message": str(e),
+            "message": "Yahoo Finance API rate limited. Please try again in a few minutes.",
             "data_source": "Error"
         }), 500
 
