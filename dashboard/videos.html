@@ -111,10 +111,11 @@
                 <div class="input-group">
                     <label>🤖 Select AI Model</label>
                     <select id="modelSelect" class="model-select">
-                        <option value="hunyuan">HunyuanVideo (Tencent) - Recommended ⭐</option>
-                        <option value="wan">Wan 2.1 (Alibaba) - Fast</option>
-                        <option value="grok">Grok Imagine (xAI) - Creative</option>
-                        <option value="zeroscope">Zeroscope V2 XL - Reliable</option>
+                        <option value="sora">Sora (OpenAI) - Best Quality 🏆</option>
+                        <option value="hunyuan">HunyuanVideo (Tencent) - High Quality ⭐</option>
+                        <option value="wan">Wan 2.1 (Alibaba) - Fast ⚡</option>
+                        <option value="grok">Grok Imagine (xAI) - Creative 🎨</option>
+                        <option value="zeroscope">Zeroscope V2 XL - Reliable 🔧</option>
                     </select>
                 </div>
 
@@ -238,6 +239,7 @@
             const output = document.getElementById('videoOutput');
 
             const modelNames = {
+                'sora': 'Sora (OpenAI)',
                 'hunyuan': 'HunyuanVideo',
                 'wan': 'Wan 2.1',
                 'grok': 'Grok Imagine',
