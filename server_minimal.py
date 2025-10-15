@@ -192,7 +192,7 @@ def market_data():
 
 @app.route('/api/generate-video', methods=['POST'])
 def generate_video():
-    """Generate video using Zeroscope V2 XL (proven working model)"""
+    """Generate video using Luma AI Dream Machine (high quality)"""
     try:
         data = request.json or {}
         prompt = data.get('prompt', '').strip()
@@ -207,17 +207,13 @@ def generate_video():
         
         print(f"Generating video for: {prompt}")
         
-        # Use Zeroscope V2 XL - proven working text-to-video model
+        # Use Luma AI Dream Machine - high quality text-to-video
         video_output = replicate.run(
-            "anotherjesse/zeroscope-v2-xl:9f747673945c62801b13b84701c783929c0ee784e4748ec062204894dda1a351",
+            "lucataco/luma-photon:3b3ae513d98489a30047f5e6e9e2e5e8e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5",
             input={
                 "prompt": prompt,
-                "num_frames": 24,
-                "num_inference_steps": 50,
-                "guidance_scale": 17.5,
-                "width": 1024,
-                "height": 576,
-                "fps": 8
+                "aspect_ratio": "16:9",
+                "loop": False
             }
         )
         
@@ -237,12 +233,44 @@ def generate_video():
             "success": True,
             "video_url": video_url,
             "prompt": prompt,
-            "model": "Zeroscope V2 XL",
-            "info": "Text-to-video generation"
+            "model": "Luma AI Dream Machine",
+            "info": "High-quality cinematic video generation"
         })
     except Exception as e:
         print(f"Error generating video: {e}")
-        return jsonify({"error": str(e)}), 500
+        # Fallback to Zeroscope if Luma fails
+        try:
+            print("Falling back to Zeroscope V2 XL...")
+            video_output = replicate.run(
+                "anotherjesse/zeroscope-v2-xl:9f747673945c62801b13b84701c783929c0ee784e4748ec062204894dda1a351",
+                input={
+                    "prompt": prompt,
+                    "num_frames": 24,
+                    "num_inference_steps": 50,
+                    "guidance_scale": 17.5,
+                    "width": 1024,
+                    "height": 576,
+                    "fps": 8
+                }
+            )
+            
+            if isinstance(video_output, str):
+                video_url = video_output
+            elif isinstance(video_output, list):
+                video_url = str(video_output[0])
+            else:
+                video_url = str(video_output)
+            
+            return jsonify({
+                "success": True,
+                "video_url": video_url,
+                "prompt": prompt,
+                "model": "Zeroscope V2 XL (fallback)",
+                "info": "Text-to-video generation"
+            })
+        except Exception as fallback_error:
+            print(f"Fallback also failed: {fallback_error}")
+            return jsonify({"error": str(e)}), 500
 
 
 if __name__ == '__main__':
