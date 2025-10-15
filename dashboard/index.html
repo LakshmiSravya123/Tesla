@@ -153,21 +153,23 @@
 
         async function loadTrends() {
             try {
-                const res = await fetch("./data.json?_=" + Date.now());
+                const API = "http://localhost:5000";
+                const res = await fetch(`${API}/api/trends`);
                 if (!res.ok) throw new Error('Failed to load');
                 const data = await res.json();
                 const list = document.getElementById('trendsList');
                 list.innerHTML = '';
                 if (data.trending_hashtags && data.trending_hashtags.length > 0) {
-                    data.trending_hashtags.slice(0, 3).forEach(h => {
-                        list.innerHTML += `<div class="trend-item"><span>${h.tag}</span><span>${(h.views/1000000).toFixed(1)}M views</span></div>`;
+                    data.trending_hashtags.slice(0, 5).forEach(h => {
+                        const trendIcon = h.trend === 'rising' ? '📈' : '📊';
+                        list.innerHTML += `<div class="trend-item"><span>${trendIcon} ${h.tag}</span><span>${(h.views/1000000).toFixed(1)}M views</span></div>`;
                     });
                 } else {
                     list.innerHTML = '<div style="color:#9ca3af;padding:10px;">No trends available</div>';
                 }
             } catch (e) {
                 console.error('Trends error:', e);
-                document.getElementById('trendsList').innerHTML = '<div style="color:#9ca3af;padding:10px;">Trends data unavailable</div>';
+                document.getElementById('trendsList').innerHTML = '<div style="color:#ef4444;padding:10px;">⚠️ Failed to load trends. Make sure backend is running.</div>';
             }
         }
 
