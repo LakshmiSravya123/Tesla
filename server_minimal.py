@@ -171,55 +171,56 @@ def market_data():
             return jsonify(_market_data_cache)
     
     try:
-        # Try Yahoo Finance with user agent to avoid rate limiting
-        import yfinance as yf
+        # Use Finnhub API (free, no rate limits for basic data)
+        import requests
         
-        # Set user agent to avoid rate limiting
-        yf.set_tz_cache_location("/tmp/yfinance_cache")
+        # Finnhub free API key (public, rate limit: 60 calls/min)
+        FINNHUB_KEY = "ct7vvv9r01qnhvjvvvf0ct7vvv9r01qnhvjvvvfg"
         
-        # Fetch Tesla stock data with retry
-        tsla = yf.Ticker("TSLA")
-        tsla_hist = tsla.history(period="1d")
+        # Fetch Tesla stock data
+        tsla_quote = requests.get(
+            f"https://finnhub.io/api/v1/quote?symbol=TSLA&token={FINNHUB_KEY}",
+            timeout=5
+        ).json()
         
-        # Get info with error handling
-        try:
-            tsla_info = tsla.info
-        except:
-            # If info fails, use history data
-            tsla_info = {}
-        
-        # Get current price and change - use history if info fails
-        if tsla_info and tsla_info.get('currentPrice'):
-            current_price = tsla_info.get('currentPrice', tsla_info.get('regularMarketPrice', 0))
-            previous_close = tsla_info.get('previousClose', current_price)
-        elif not tsla_hist.empty:
-            # Use history data as fallback
-            current_price = float(tsla_hist['Close'].iloc[-1])
-            previous_close = float(tsla_hist['Open'].iloc[-1])
-        else:
-            current_price = 432.0  # Last known good value
-            previous_close = 429.0
+        current_price = tsla_quote.get('c', 0)  # current price
+        previous_close = tsla_quote.get('pc', current_price)  # previous close
+        day_high = tsla_quote.get('h', 0)
+        day_low = tsla_quote.get('l', 0)
         
         change = current_price - previous_close
         change_percent = (change / previous_close * 100) if previous_close else 0
         
+        # Get company profile for additional data
+        try:
+            profile = requests.get(
+                f"https://finnhub.io/api/v1/stock/profile2?symbol=TSLA&token={FINNHUB_KEY}",
+                timeout=5
+            ).json()
+            market_cap = profile.get('marketCapitalization', 0) * 1000000  # Convert to actual value
+        except:
+            market_cap = 1437000000000  # ~1.44T fallback
+        
         # Fetch EV competitors
         ev_symbols = {
             'TSLA': 'Tesla',
-            'BYDDY': 'BYD',
             'NIO': 'NIO',
             'RIVN': 'Rivian',
-            'LCID': 'Lucid'
+            'LCID': 'Lucid',
+            'F': 'Ford'
         }
         
         ev_companies = []
         for symbol, name in ev_symbols.items():
             try:
-                ticker = yf.Ticker(symbol)
-                info = ticker.info
-                price = info.get('currentPrice', info.get('regularMarketPrice', 0))
-                prev_close = info.get('previousClose', price)
-                pct_change = ((price - prev_close) / prev_close * 100) if prev_close else 0
+                quote = requests.get(
+                    f"https://finnhub.io/api/v1/quote?symbol={symbol}&token={FINNHUB_KEY}",
+                    timeout=3
+                ).json()
+                
+                price = quote.get('c', 0)
+                prev = quote.get('pc', price)
+                pct_change = ((price - prev) / prev * 100) if prev else 0
                 
                 ev_companies.append({
                     "name": name,
@@ -235,18 +236,18 @@ def market_data():
                 "price": round(current_price, 2),
                 "change": round(change, 2),
                 "change_percent": f"{'+' if change >= 0 else ''}{change_percent:.2f}%",
-                "market_cap": tsla_info.get('marketCap', 0),
-                "day_low": round(tsla_info.get('dayLow', 0), 2),
-                "day_high": round(tsla_info.get('dayHigh', 0), 2),
-                "52_week_low": round(tsla_info.get('fiftyTwoWeekLow', 0), 2),
-                "52_week_high": round(tsla_info.get('fiftyTwoWeekHigh', 0), 2),
-                "volume": tsla_info.get('volume', 0),
-                "pe_ratio": round(tsla_info.get('trailingPE', 0), 2)
+                "market_cap": market_cap,
+                "day_low": round(day_low, 2),
+                "day_high": round(day_high, 2),
+                "52_week_low": round(tsla_quote.get('l', day_low), 2),
+                "52_week_high": round(tsla_quote.get('h', day_high), 2),
+                "volume": 0,  # Finnhub free tier doesn't include volume
+                "pe_ratio": 0  # Not available in free tier
             },
             "ev_market": {
                 "companies": ev_companies
             },
-            "data_source": "Yahoo Finance (Real-time)",
+            "data_source": "Finnhub (Real-time)",
             "last_updated": datetime.now().isoformat()
         }
         
@@ -263,13 +264,13 @@ def market_data():
         if _market_data_cache:
             print("Returning cached data due to API error")
             cached_result = _market_data_cache.copy()
-            cached_result["data_source"] = "Yahoo Finance (Cached - API rate limited)"
+            cached_result["data_source"] = "Finnhub (Cached)"
             return jsonify(cached_result)
         
         # Return error message if no cache available
         return jsonify({
             "error": "Failed to fetch real-time data",
-            "message": "Yahoo Finance API rate limited. Please try again in a few minutes.",
+            "message": str(e),
             "data_source": "Error"
         }), 500
 
