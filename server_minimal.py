@@ -11,7 +11,18 @@ from datetime import datetime
 import json
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [
+            "https://tesla-sales-dashboard.vercel.app",
+            "http://localhost:*",
+            "http://127.0.0.1:*"
+        ],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"],
+        "supports_credentials": True
+    }
+})
 
 # Environment variables
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
