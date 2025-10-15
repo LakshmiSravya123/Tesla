@@ -169,20 +169,30 @@
         }
 
         function displayPrompts(prompts) {
-            const html = prompts.map(p => {
-                const escapedPrompt = p.prompt.replace(/'/g, "&apos;").replace(/"/g, "&quot;");
-                return `
-                <div class="prompt-item" onclick="selectPrompt('${escapedPrompt}', this)">
+            const container = document.getElementById('promptsList');
+            container.innerHTML = '';
+            
+            prompts.forEach((p, index) => {
+                const div = document.createElement('div');
+                div.className = 'prompt-item';
+                div.dataset.promptIndex = index;
+                div.dataset.prompt = p.prompt;
+                
+                div.innerHTML = `
                     <div class="prompt-title">${p.title}</div>
                     <div style="display:flex;justify-content:space-between;align-items:center;margin:5px 0;">
                         <div class="prompt-category">${p.category || 'General'}</div>
                         ${p.trend ? `<div style="font-size:0.8rem;color:#10b981;">${p.trend}</div>` : ''}
                     </div>
                     <div class="prompt-text">${p.prompt.substring(0, 100)}...</div>
-                </div>
-            `}).join('');
-            
-            document.getElementById('promptsList').innerHTML = html;
+                `;
+                
+                div.addEventListener('click', function() {
+                    selectPrompt(this.dataset.prompt, this);
+                });
+                
+                container.appendChild(div);
+            });
         }
 
         function selectPrompt(prompt, element) {
