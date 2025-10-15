@@ -339,7 +339,7 @@
         async function loadSocialTrends() {
             const container = document.getElementById('socialTrendsContent');
             try {
-                const API = "http://localhost:5000";
+                const API = "https://tesla-dashboard-api.onrender.com";
                 const res = await fetch(`${API}/api/trends`);
                 
                 if (!res.ok) throw new Error('Failed to load trends');
