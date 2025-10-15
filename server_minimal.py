@@ -208,7 +208,15 @@ def generate_video():
             }
         )
         
-        image_url = image_output[0] if isinstance(image_output, list) else image_output
+        # Handle image output
+        if isinstance(image_output, list):
+            image_url = str(image_output[0])
+        elif isinstance(image_output, str):
+            image_url = image_output
+        elif hasattr(image_output, 'url'):
+            image_url = image_output.url
+        else:
+            image_url = str(image_output)
         print(f"Image generated: {image_url}")
         
         # Step 2: Generate video from image with Stable Video Diffusion
