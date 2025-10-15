@@ -293,16 +293,6 @@ def generate_video():
         
         # Model configurations
         models = {
-            'sora': {
-                'name': 'Sora (OpenAI)',
-                'type': 'openai',
-                'input': {
-                    'prompt': prompt,
-                    'model': 'sora-1.0-turbo',
-                    'size': '1920x1080',
-                    'quality': 'high'
-                }
-            },
             'hunyuan': {
                 'name': 'HunyuanVideo (Tencent)',
                 'id': 'tencent/hunyuan-video:847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405',
@@ -349,40 +339,21 @@ def generate_video():
         
         print(f"Using model: {model_config['name']}")
         
-        # Check if it's Sora (OpenAI) or Replicate model
-        if model_config.get('type') == 'openai':
-            # Use OpenAI API for Sora
-            if not OPENAI_API_KEY:
-                return jsonify({"error": "OPENAI_API_KEY not configured for Sora"}), 500
-            
-            from openai import OpenAI
-            client = OpenAI(api_key=OPENAI_API_KEY)
-            
-            print("Generating video with OpenAI Sora...")
-            response = client.videos.generate(
-                model=model_config['input']['model'],
-                prompt=prompt,
-                size=model_config['input']['size'],
-                quality=model_config['input']['quality']
-            )
-            
-            video_url = response.url
+        # Generate video with Replicate
+        video_output = replicate.run(
+            model_config['id'],
+            input=model_config['input']
+        )
+        
+        # Handle video output
+        if isinstance(video_output, str):
+            video_url = video_output
+        elif isinstance(video_output, list):
+            video_url = str(video_output[0])
+        elif hasattr(video_output, 'url'):
+            video_url = video_output.url
         else:
-            # Use Replicate for other models
-            video_output = replicate.run(
-                model_config['id'],
-                input=model_config['input']
-            )
-            
-            # Handle video output
-            if isinstance(video_output, str):
-                video_url = video_output
-            elif isinstance(video_output, list):
-                video_url = str(video_output[0])
-            elif hasattr(video_output, 'url'):
-                video_url = video_output.url
-            else:
-                video_url = str(video_output)
+            video_url = str(video_output)
         
         print(f"Video generated: {video_url}")
         
@@ -404,16 +375,9 @@ def get_models():
     return jsonify({
         "models": [
             {
-                "id": "sora",
-                "name": "Sora (OpenAI)",
-                "description": "Highest quality, cinematic AI video - 1080p",
-                "recommended": True,
-                "requires": "OpenAI API Key"
-            },
-            {
                 "id": "hunyuan",
                 "name": "HunyuanVideo (Tencent)",
-                "description": "High-quality video generation, 129 frames",
+                "description": "Highest quality - 129 frames, cinematic",
                 "recommended": True
             },
             {
