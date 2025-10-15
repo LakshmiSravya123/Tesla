@@ -201,7 +201,10 @@
                 subtext.textContent = 'Step 2: Creating MP4 video...';
                 const data = await res.json();
 
-                currentVideoUrl = `${API}${data.video_url}`;
+                // Video URL is already a full URL from Replicate
+                currentVideoUrl = data.video_url;
+                
+                console.log('Video URL:', currentVideoUrl);
                 
                 // Show video
                 const video = document.getElementById('videoPlayer');
