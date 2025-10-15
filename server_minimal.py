@@ -192,7 +192,7 @@ def market_data():
 
 @app.route('/api/generate-video', methods=['POST'])
 def generate_video():
-    """Generate video using CogVideoX-5b Image-to-Video model"""
+    """Generate video using Zeroscope V2 XL (proven working model)"""
     try:
         data = request.json or {}
         prompt = data.get('prompt', '').strip()
@@ -205,40 +205,19 @@ def generate_video():
         
         import replicate
         
-        # Step 1: Generate image with Stable Diffusion XL
-        print(f"Generating image for: {prompt}")
-        image_output = replicate.run(
-            "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
+        print(f"Generating video for: {prompt}")
+        
+        # Use Zeroscope V2 XL - proven working text-to-video model
+        video_output = replicate.run(
+            "anotherjesse/zeroscope-v2-xl:9f747673945c62801b13b84701c783929c0ee784e4748ec062204894dda1a351",
             input={
                 "prompt": prompt,
+                "num_frames": 24,
+                "num_inference_steps": 50,
+                "guidance_scale": 17.5,
                 "width": 1024,
                 "height": 576,
-                "num_outputs": 1
-            }
-        )
-        
-        # Handle image output
-        if isinstance(image_output, list):
-            image_url = str(image_output[0])
-        elif isinstance(image_output, str):
-            image_url = image_output
-        elif hasattr(image_output, 'url'):
-            image_url = image_output.url
-        else:
-            image_url = str(image_output)
-        
-        print(f"Image generated: {image_url}")
-        
-        # Step 2: Generate video from image with CogVideoX-5b
-        print("Generating video with CogVideoX-5b...")
-        video_output = replicate.run(
-            "zsxkib/cog-video-x-5b-i2v:e8e8e9f2e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0",
-            input={
-                "image": image_url,
-                "prompt": prompt,
-                "num_inference_steps": 50,
-                "guidance_scale": 6.0,
-                "num_frames": 49
+                "fps": 8
             }
         )
         
@@ -257,10 +236,9 @@ def generate_video():
         return jsonify({
             "success": True,
             "video_url": video_url,
-            "image_url": image_url,
             "prompt": prompt,
-            "model": "CogVideoX-5b I2V",
-            "info": "Generated with SDXL + CogVideoX"
+            "model": "Zeroscope V2 XL",
+            "info": "Text-to-video generation"
         })
     except Exception as e:
         print(f"Error generating video: {e}")
