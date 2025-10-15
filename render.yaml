@@ -1,3 +1,4 @@
+# Tesla Dashboard API - Real-time Yahoo Finance data
 services:
   - type: web
     name: tesla-dashboard-api
