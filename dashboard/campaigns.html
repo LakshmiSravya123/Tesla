@@ -339,33 +339,35 @@
         async function loadSocialTrends() {
             const container = document.getElementById('socialTrendsContent');
             try {
+                const API = "http://localhost:5000";
+                const res = await fetch(`${API}/api/trends`);
+                
+                if (!res.ok) throw new Error('Failed to load trends');
+                
                 const data = await res.json();
                 
-                if (data.note) {
-                    container.innerHTML = `
-                        <div style="padding: 20px; text-align: center;">
-                            <p style="color: #9ca3af; margin-bottom: 16px;">${data.note}</p>
-                            <p style="color: #6b7280; font-size: 0.9rem;">
-                                To get real TikTok campaign data, you need:
-                            </p>
-                            <ul style="list-style: none; padding: 0; margin-top: 12px; color: #9ca3af; font-size: 0.9rem;">
-                                <li>• TikTok Business Account</li>
-                                <li>• TikTok Ads Manager Access</li>
-                                <li>• API Authentication Token</li>
-                            </ul>
-                        </div>
-                    `;
-                } else if (data.trending_hashtags) {
+                if (data.trending_hashtags && data.trending_hashtags.length > 0) {
                     container.innerHTML = data.trending_hashtags.map(tag => `
-                        <div style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 8px;">
-                            <strong style="color: #fff;">${tag.tag}</strong>
-                            <span style="color: #10b981; margin-left: 12px;">${tag.growth}</span>
-                            <span style="color: #6b7280; margin-left: 12px;">${tag.views.toLocaleString()} views</span>
+                        <div style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong style="color: #fff;">${tag.tag}</strong>
+                                <span style="color: ${tag.trend === 'rising' ? '#10b981' : '#6b7280'}; margin-left: 12px; font-size: 0.85rem;">
+                                    ${tag.trend === 'rising' ? '📈 Rising' : '📊 Stable'}
+                                </span>
+                            </div>
+                            <span style="color: #9ca3af; font-size: 0.9rem;">${(tag.views / 1000000).toFixed(1)}M views</span>
                         </div>
                     `).join('');
+                } else {
+                    container.innerHTML = `
+                        <div style="padding: 20px; text-align: center; color: #9ca3af;">
+                            No trends available
+                        </div>
+                    `;
                 }
             } catch (e) {
-                container.innerHTML = `<div style="color: #ef4444; padding: 20px;">Failed to load social trends</div>`;
+                console.error('Error loading social trends:', e);
+                container.innerHTML = `<div style="color: #ef4444; padding: 20px;">⚠️ Failed to load social trends. Make sure backend is running.</div>`;
             }
         }
 
