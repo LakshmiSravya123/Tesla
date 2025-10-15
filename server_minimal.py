@@ -226,13 +226,22 @@ def generate_video():
             }
         )
         
-        video_url = video_output if isinstance(video_output, str) else video_output[0] if isinstance(video_output, list) else str(video_output)
+        # Handle different output types from Replicate
+        if isinstance(video_output, str):
+            video_url = video_output
+        elif isinstance(video_output, list):
+            video_url = str(video_output[0])
+        elif hasattr(video_output, 'url'):
+            video_url = video_output.url
+        else:
+            video_url = str(video_output)
+        
         print(f"Video generated: {video_url}")
         
         return jsonify({
             "success": True,
             "video_url": video_url,
-            "image_url": image_url,
+            "image_url": str(image_url),
             "prompt": prompt,
             "model": "Stable Video Diffusion",
             "info": "Generated with SDXL + SVD"
