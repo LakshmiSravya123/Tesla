@@ -62,23 +62,32 @@ def generate_prompts_from_trends():
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a creative video marketing expert for Tesla. Generate engaging TikTok video prompts."},
+                {"role": "system", "content": "You are an expert cinematographer and Tesla marketing specialist. Create highly detailed, cinematic video prompts."},
                 {"role": "user", "content": f"""Based on these trending TikTok hashtags: {', '.join(trending_tags)}
 
-Generate 5 creative video prompts for Tesla marketing videos. Each prompt should be:
-- Cinematic and engaging
-- 15-30 seconds suitable for TikTok
-- Showcase Tesla features
-- Align with the trending hashtag
+Generate 5 EXTREMELY DETAILED, cinematic video prompts for Tesla marketing videos.
 
-Return ONLY a JSON array with this exact format:
+Each prompt MUST include:
+- Specific camera angles (wide-angle, close-up, drone shot, dolly, etc.)
+- Lighting details (golden hour, studio lighting, neon, etc.)
+- Setting and environment (urban, highway, showroom, nature, etc.)
+- Camera movements (pan, zoom, tracking shot, etc.)
+- Specific Tesla features being showcased
+- Mood and atmosphere
+- Shot transitions
+- 80-150 words of detailed description
+
+Example of detail level:
+"Cinematic drone shot starting 100 feet above winding coastal highway at golden hour. Camera descends revealing pearl white Tesla Model Y navigating curves, sunlight gleaming off aerodynamic body. Cut to interior: minimalist dashboard, 15-inch touchscreen showing autopilot engaged, blue steering wheel icon glowing. Driver's hands hover confidently as car smoothly handles turns. Through panoramic glass roof, see orange-pink sunset. Close-up of regenerative braking display showing energy recovery. Wide shot: car passes cliff edge with crashing waves below. Final shot: Tesla badge in sunset light."
+
+Return ONLY a JSON array:
 [
-  {{"title": "Short Title", "prompt": "Detailed video description", "category": "Lifestyle/Technology/Performance", "trend": "#hashtag"}},
+  {{"title": "Catchy 3-5 Word Title", "prompt": "EXTREMELY detailed 80-150 word cinematic description with camera angles, lighting, movements, and specific Tesla features", "category": "Lifestyle/Technology/Performance/Luxury", "trend": "#hashtag"}},
   ...
 ]"""}
             ],
-            temperature=0.8,
-            max_tokens=800
+            temperature=0.9,
+            max_tokens=2000
         )
         
         content = response.choices[0].message.content.strip()
@@ -183,7 +192,7 @@ def market_data():
 
 @app.route('/api/generate-video', methods=['POST'])
 def generate_video():
-    """Generate video using Stable Video Diffusion via Replicate"""
+    """Generate video using CogVideoX-5b Image-to-Video model"""
     try:
         data = request.json or {}
         prompt = data.get('prompt', '').strip()
@@ -217,24 +226,23 @@ def generate_video():
             image_url = image_output.url
         else:
             image_url = str(image_output)
+        
         print(f"Image generated: {image_url}")
         
-        # Step 2: Generate video from image with Stable Video Diffusion
-        print("Generating video from image...")
+        # Step 2: Generate video from image with CogVideoX-5b
+        print("Generating video with CogVideoX-5b...")
         video_output = replicate.run(
-            "stability-ai/stable-video-diffusion:3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
+            "zsxkib/cog-video-x-5b-i2v:e8e8e9f2e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0",
             input={
-                "input_image": image_url,
-                "cond_aug": 0.02,
-                "decoding_t": 7,
-                "video_length": "14_frames_with_svd",
-                "sizing_strategy": "maintain_aspect_ratio",
-                "motion_bucket_id": 127,
-                "frames_per_second": 6
+                "image": image_url,
+                "prompt": prompt,
+                "num_inference_steps": 50,
+                "guidance_scale": 6.0,
+                "num_frames": 49
             }
         )
         
-        # Handle different output types from Replicate
+        # Handle video output
         if isinstance(video_output, str):
             video_url = video_output
         elif isinstance(video_output, list):
@@ -249,14 +257,15 @@ def generate_video():
         return jsonify({
             "success": True,
             "video_url": video_url,
-            "image_url": str(image_url),
+            "image_url": image_url,
             "prompt": prompt,
-            "model": "Stable Video Diffusion",
-            "info": "Generated with SDXL + SVD"
+            "model": "CogVideoX-5b I2V",
+            "info": "Generated with SDXL + CogVideoX"
         })
     except Exception as e:
         print(f"Error generating video: {e}")
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
