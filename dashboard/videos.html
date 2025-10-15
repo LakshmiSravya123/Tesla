@@ -28,6 +28,9 @@
         .generator-panel { background: #1e293b; border-radius: 16px; padding: 30px; }
         .input-group { margin-bottom: 20px; }
         .input-group label { display: block; color: #9ca3af; margin-bottom: 10px; font-size: 0.9rem; }
+        .model-select { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 14px; color: #fff; font-family: 'Inter', sans-serif; cursor: pointer; }
+        .model-select:focus { outline: none; border-color: #6366f1; }
+        .model-select option { background: #1e293b; color: #fff; }
         .prompt-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 14px; color: #fff; font-family: 'Inter', sans-serif; resize: vertical; min-height: 100px; }
         .prompt-input:focus { outline: none; border-color: #6366f1; }
         .btn-generate { width: 100%; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: #fff; border: none; padding: 14px; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
@@ -106,7 +109,17 @@
 
             <div class="generator-panel">
                 <div class="input-group">
-                    <label>🎯 Your Prompt</label>
+                    <label>🤖 Select AI Model</label>
+                    <select id="modelSelect" class="model-select">
+                        <option value="hunyuan">HunyuanVideo (Tencent) - Recommended ⭐</option>
+                        <option value="wan">Wan 2.1 (Alibaba) - Fast</option>
+                        <option value="grok">Grok Imagine (xAI) - Creative</option>
+                        <option value="zeroscope">Zeroscope V2 XL - Reliable</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>✍️ Video Prompt</label>
                     <textarea id="promptInput" class="prompt-input" placeholder="Describe your Tesla video..."></textarea>
                 </div>
 
@@ -212,6 +225,8 @@
 
         async function generateVideo() {
             const prompt = document.getElementById('promptInput').value.trim();
+            const model = document.getElementById('modelSelect').value;
+            
             if (!prompt) {
                 alert('Please enter a prompt');
                 return;
@@ -222,16 +237,26 @@
             const subtext = document.getElementById('loadingSubtext');
             const output = document.getElementById('videoOutput');
 
+            const modelNames = {
+                'hunyuan': 'HunyuanVideo',
+                'wan': 'Wan 2.1',
+                'grok': 'Grok Imagine',
+                'zeroscope': 'Zeroscope V2 XL'
+            };
+
             btn.disabled = true;
             btn.textContent = '⏳ Generating...';
             loading.classList.add('show');
-            subtext.textContent = 'Step 1: Generating image with DALL-E 3...';
+            subtext.textContent = `Generating with ${modelNames[model]}... (30-120 seconds)`;
 
             try {
                 const res = await fetch(`${API}/api/generate-video`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({prompt: prompt})
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        model: model
+                    })
                 });
 
                 if (!res.ok) {

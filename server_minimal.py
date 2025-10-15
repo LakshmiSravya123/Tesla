@@ -192,10 +192,11 @@ def market_data():
 
 @app.route('/api/generate-video', methods=['POST'])
 def generate_video():
-    """Generate video using Luma AI Dream Machine (high quality)"""
+    """Generate video using selected model"""
     try:
         data = request.json or {}
         prompt = data.get('prompt', '').strip()
+        model = data.get('model', 'hunyuan').lower()
         
         if not prompt:
             return jsonify({"error": "Prompt required"}), 400
@@ -205,16 +206,60 @@ def generate_video():
         
         import replicate
         
-        print(f"Generating video for: {prompt}")
+        print(f"Generating video with {model} for: {prompt}")
         
-        # Use Luma AI Dream Machine - high quality text-to-video
-        video_output = replicate.run(
-            "lucataco/luma-photon:3b3ae513d98489a30047f5e6e9e2e5e8e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5",
-            input={
-                "prompt": prompt,
-                "aspect_ratio": "16:9",
-                "loop": False
+        # Model configurations
+        models = {
+            'hunyuan': {
+                'name': 'HunyuanVideo (Tencent)',
+                'id': 'tencent/hunyuan-video:847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405',
+                'input': {
+                    'prompt': prompt,
+                    'num_frames': 129,
+                    'num_inference_steps': 50
+                }
+            },
+            'wan': {
+                'name': 'Wan 2.1 (Alibaba)',
+                'id': 'zsxkib/wan:fce29b1d70f37c6e8e6c0c8c4e4c0c8c4e4c0c8c4e4c0c8c4e4c0c8c4e4c0c8c',
+                'input': {
+                    'prompt': prompt,
+                    'num_inference_steps': 50,
+                    'guidance_scale': 7.5
+                }
+            },
+            'grok': {
+                'name': 'Grok Imagine (xAI)',
+                'id': 'lucataco/grok-imagine:8b0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e',
+                'input': {
+                    'prompt': prompt,
+                    'aspect_ratio': '16:9'
+                }
+            },
+            'zeroscope': {
+                'name': 'Zeroscope V2 XL',
+                'id': 'anotherjesse/zeroscope-v2-xl:9f747673945c62801b13b84701c783929c0ee784e4748ec062204894dda1a351',
+                'input': {
+                    'prompt': prompt,
+                    'num_frames': 24,
+                    'num_inference_steps': 50,
+                    'guidance_scale': 17.5,
+                    'width': 1024,
+                    'height': 576,
+                    'fps': 8
+                }
             }
+        }
+        
+        # Get selected model or default to HunyuanVideo
+        model_config = models.get(model, models['hunyuan'])
+        
+        print(f"Using model: {model_config['name']}")
+        
+        # Generate video
+        video_output = replicate.run(
+            model_config['id'],
+            input=model_config['input']
         )
         
         # Handle video output
@@ -233,44 +278,45 @@ def generate_video():
             "success": True,
             "video_url": video_url,
             "prompt": prompt,
-            "model": "Luma AI Dream Machine",
-            "info": "High-quality cinematic video generation"
+            "model": model_config['name'],
+            "info": f"Generated with {model_config['name']}"
         })
+        
     except Exception as e:
         print(f"Error generating video: {e}")
-        # Fallback to Zeroscope if Luma fails
-        try:
-            print("Falling back to Zeroscope V2 XL...")
-            video_output = replicate.run(
-                "anotherjesse/zeroscope-v2-xl:9f747673945c62801b13b84701c783929c0ee784e4748ec062204894dda1a351",
-                input={
-                    "prompt": prompt,
-                    "num_frames": 24,
-                    "num_inference_steps": 50,
-                    "guidance_scale": 17.5,
-                    "width": 1024,
-                    "height": 576,
-                    "fps": 8
-                }
-            )
-            
-            if isinstance(video_output, str):
-                video_url = video_output
-            elif isinstance(video_output, list):
-                video_url = str(video_output[0])
-            else:
-                video_url = str(video_output)
-            
-            return jsonify({
-                "success": True,
-                "video_url": video_url,
-                "prompt": prompt,
-                "model": "Zeroscope V2 XL (fallback)",
-                "info": "Text-to-video generation"
-            })
-        except Exception as fallback_error:
-            print(f"Fallback also failed: {fallback_error}")
-            return jsonify({"error": str(e)}), 500
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/models')
+def get_models():
+    """Get available video generation models"""
+    return jsonify({
+        "models": [
+            {
+                "id": "hunyuan",
+                "name": "HunyuanVideo (Tencent)",
+                "description": "High-quality video generation, 129 frames",
+                "recommended": True
+            },
+            {
+                "id": "wan",
+                "name": "Wan 2.1 (Alibaba)",
+                "description": "Fast and efficient video generation",
+                "recommended": False
+            },
+            {
+                "id": "grok",
+                "name": "Grok Imagine (xAI)",
+                "description": "Creative and artistic video generation",
+                "recommended": False
+            },
+            {
+                "id": "zeroscope",
+                "name": "Zeroscope V2 XL",
+                "description": "Reliable baseline model",
+                "recommended": False
+            }
+        ]
+    })
 
 
 if __name__ == '__main__':
