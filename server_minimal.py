@@ -257,19 +257,28 @@ def market_data():
             "data_source": "Error"
         }), 500
 
-@app.route('/api/generate-video', methods=['POST'])
+@app.route('/api/generate-video', methods=['POST', 'OPTIONS'])
 def generate_video():
     """Generate video using selected model"""
+    # Handle preflight OPTIONS request
+    if request.method == 'OPTIONS':
+        return '', 204
+    
     try:
         data = request.json or {}
         prompt = data.get('prompt', '').strip()
         model = data.get('model', 'hunyuan').lower()
         
+        print(f"Received request - Prompt: {prompt[:50]}..., Model: {model}")
+        
         if not prompt:
             return jsonify({"error": "Prompt required"}), 400
             
         if not REPLICATE_API_TOKEN:
-            return jsonify({"error": "REPLICATE_API_TOKEN not configured"}), 500
+            return jsonify({
+                "error": "REPLICATE_API_TOKEN not configured",
+                "message": "Please add REPLICATE_API_TOKEN to environment variables"
+            }), 500
         
         import replicate
         
@@ -350,8 +359,16 @@ def generate_video():
         })
         
     except Exception as e:
-        print(f"Error generating video: {e}")
-        return jsonify({"error": str(e)}), 500
+        error_msg = str(e)
+        print(f"Error generating video: {error_msg}")
+        import traceback
+        traceback.print_exc()
+        
+        return jsonify({
+            "error": "Video generation failed",
+            "message": error_msg,
+            "details": "Check server logs for more information"
+        }), 500
 
 @app.route('/api/models')
 def get_models():
