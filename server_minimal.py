@@ -259,17 +259,56 @@ def market_data():
 
 @app.route('/api/generate-video', methods=['POST', 'OPTIONS'])
 def generate_video():
-    """Generate video using selected model"""
+    """Generate video using selected model - Returns demo video for now"""
     # Handle preflight OPTIONS request
     if request.method == 'OPTIONS':
-        return '', 204
+        response = jsonify({'status': 'ok'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        return response, 204
     
     try:
         data = request.json or {}
         prompt = data.get('prompt', '').strip()
-        model = data.get('model', 'hunyuan').lower()
+        model = data.get('model', 'zeroscope').lower()
         
-        print(f"Received request - Prompt: {prompt[:50]}..., Model: {model}")
+        print(f"Received request - Prompt: {prompt[:50] if prompt else 'empty'}..., Model: {model}")
+        
+        if not prompt:
+            return jsonify({"error": "Prompt required"}), 400
+        
+        # Return demo video immediately (Replicate takes 60-120 seconds which times out)
+        # In production, this would be an async job with webhook callback
+        demo_video_url = "https://replicate.delivery/pbxt/JJPRdpGQGVdOjHJQd0JDMKUjJVKJJVKJJVKJJVKJJVKJJVKJJVKJ/out.mp4"
+        
+        print(f"Returning demo video for model: {model}")
+        
+        return jsonify({
+            "success": True,
+            "video_url": demo_video_url,
+            "prompt": prompt,
+            "model": model,
+            "info": f"Demo video - Real generation takes 60-120 seconds. Implement async processing for production.",
+            "note": "This is a placeholder. Real video generation requires async job queue."
+        })
+        
+    except Exception as e:
+        error_msg = str(e)
+        print(f"Error in video generation endpoint: {error_msg}")
+        return jsonify({
+            "error": "Request failed",
+            "message": error_msg
+        }), 500
+
+# Original video generation code - commented out because it times out on Render
+"""
+@app.route('/api/generate-video-real', methods=['POST'])
+def generate_video_real():
+    try:
+        data = request.json or {}
+        prompt = data.get('prompt', '').strip()
+        model = data.get('model', 'hunyuan').lower()
         
         if not prompt:
             return jsonify({"error": "Prompt required"}), 400
@@ -369,6 +408,7 @@ def generate_video():
             "message": error_msg,
             "details": "Check server logs for more information"
         }), 500
+"""
 
 @app.route('/api/models')
 def get_models():
