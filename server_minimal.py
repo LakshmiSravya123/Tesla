@@ -163,32 +163,76 @@ def trends():
 
 @app.route('/api/market-data')
 def market_data():
-    """Return market data"""
-    return jsonify({
-        "tesla_stock": {
-            "price": 242.84,
-            "change": 5.23,
-            "change_percent": "+2.20%",
-            "market_cap": 772000000000,
-            "day_low": 238.50,
-            "day_high": 245.30,
-            "52_week_low": 152.37,
-            "52_week_high": 299.29,
-            "volume": 125000000,
-            "pe_ratio": 73.45
-        },
-        "ev_market": {
-            "companies": [
-                {"name": "Tesla", "symbol": "TSLA", "price": 242.84, "change_percent": 2.20},
-                {"name": "BYD", "symbol": "BYDDY", "price": 58.32, "change_percent": 1.45},
-                {"name": "NIO", "symbol": "NIO", "price": 7.89, "change_percent": -0.85},
-                {"name": "Rivian", "symbol": "RIVN", "price": 12.45, "change_percent": 3.20},
-                {"name": "Lucid", "symbol": "LCID", "price": 3.21, "change_percent": -1.50}
-            ]
-        },
-        "data_source": "Demo Data",
-        "last_updated": datetime.now().isoformat()
-    })
+    """Return real-time market data from Yahoo Finance"""
+    try:
+        import yfinance as yf
+        
+        # Fetch Tesla stock data
+        tsla = yf.Ticker("TSLA")
+        tsla_info = tsla.info
+        tsla_hist = tsla.history(period="1d")
+        
+        # Get current price and change
+        current_price = tsla_info.get('currentPrice', tsla_info.get('regularMarketPrice', 0))
+        previous_close = tsla_info.get('previousClose', current_price)
+        change = current_price - previous_close
+        change_percent = (change / previous_close * 100) if previous_close else 0
+        
+        # Fetch EV competitors
+        ev_symbols = {
+            'TSLA': 'Tesla',
+            'BYDDY': 'BYD',
+            'NIO': 'NIO',
+            'RIVN': 'Rivian',
+            'LCID': 'Lucid'
+        }
+        
+        ev_companies = []
+        for symbol, name in ev_symbols.items():
+            try:
+                ticker = yf.Ticker(symbol)
+                info = ticker.info
+                price = info.get('currentPrice', info.get('regularMarketPrice', 0))
+                prev_close = info.get('previousClose', price)
+                pct_change = ((price - prev_close) / prev_close * 100) if prev_close else 0
+                
+                ev_companies.append({
+                    "name": name,
+                    "symbol": symbol,
+                    "price": round(price, 2),
+                    "change_percent": round(pct_change, 2)
+                })
+            except:
+                pass
+        
+        return jsonify({
+            "tesla_stock": {
+                "price": round(current_price, 2),
+                "change": round(change, 2),
+                "change_percent": f"{'+' if change >= 0 else ''}{change_percent:.2f}%",
+                "market_cap": tsla_info.get('marketCap', 0),
+                "day_low": round(tsla_info.get('dayLow', 0), 2),
+                "day_high": round(tsla_info.get('dayHigh', 0), 2),
+                "52_week_low": round(tsla_info.get('fiftyTwoWeekLow', 0), 2),
+                "52_week_high": round(tsla_info.get('fiftyTwoWeekHigh', 0), 2),
+                "volume": tsla_info.get('volume', 0),
+                "pe_ratio": round(tsla_info.get('trailingPE', 0), 2)
+            },
+            "ev_market": {
+                "companies": ev_companies
+            },
+            "data_source": "Yahoo Finance (Real-time)",
+            "last_updated": datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        print(f"Error fetching market data: {e}")
+        # Return error message instead of fake data
+        return jsonify({
+            "error": "Failed to fetch real-time data",
+            "message": str(e),
+            "data_source": "Error"
+        }), 500
 
 @app.route('/api/generate-video', methods=['POST'])
 def generate_video():
