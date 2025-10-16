@@ -267,36 +267,134 @@ def market_data():
 
 @app.route('/api/generate-video', methods=['POST', 'OPTIONS'])
 def generate_video():
-    """Generate video - Returns demo video instantly"""
+    """Generate video using Replicate API - starts async generation"""
     # Handle preflight OPTIONS request
     if request.method == 'OPTIONS':
         return '', 204
     
-    # Always return success with demo video - no external API calls
-    data = request.json or {}
-    prompt = data.get('prompt', 'Tesla video').strip()
-    model = data.get('model', 'zeroscope').lower()
-    
-    print(f"Video request - Prompt: {prompt[:50]}..., Model: {model}")
-    
-    # Return demo video URL immediately
-    demo_videos = {
-        'hunyuan': 'https://replicate.delivery/pbxt/KfEhQjfCpCjZ8yvI8pxJQfJQfJQfJQfJQfJQfJQfJQfJQfJQfJQf/out.mp4',
-        'wan': 'https://replicate.delivery/pbxt/LmFiRkgDqDkA9zwJ9qyKRgKRgKRgKRgKRgKRgKRgKRgKRgKRgKRg/out.mp4',
-        'grok': 'https://replicate.delivery/pbxt/NnGjSlhEsElB0AxK0rzLShLShLShLShLShLShLShLShLShLShLSh/out.mp4',
-        'zeroscope': 'https://replicate.delivery/pbxt/OoHkTmiGtGmC1ByL1sAMTiMTiMTiMTiMTiMTiMTiMTiMTiMTiMTi/out.mp4'
-    }
-    
-    video_url = demo_videos.get(model, demo_videos['zeroscope'])
-    
-    return jsonify({
-        "success": True,
-        "video_url": video_url,
-        "prompt": prompt,
-        "model": model,
-        "info": "Demo video returned instantly",
-        "status": "completed"
-    }), 200
+    try:
+        data = request.json or {}
+        prompt = data.get('prompt', '').strip()
+        model = data.get('model', 'zeroscope').lower()
+        
+        if not prompt:
+            return jsonify({"error": "Prompt required"}), 400
+        
+        if not REPLICATE_API_TOKEN:
+            return jsonify({"error": "REPLICATE_API_TOKEN not configured"}), 500
+        
+        import replicate
+        
+        print(f"Starting video generation - Model: {model}, Prompt: {prompt[:50]}...")
+        
+        # Model configurations with correct IDs
+        models = {
+            'zeroscope': {
+                'name': 'Zeroscope V2 XL',
+                'id': 'anotherjesse/zeroscope-v2-xl:9f747673945c62801b13b84701c783929c0ee784e4748ec062204894dda1a351',
+                'input': {
+                    'prompt': prompt,
+                    'num_frames': 24,
+                    'num_inference_steps': 50
+                }
+            },
+            'hunyuan': {
+                'name': 'HunyuanVideo',
+                'id': 'tencent/hunyuan-video:847dfa8b01e739637fc76f480ede0c1d76408e1d694b830b5dfb8e547bf98405',
+                'input': {
+                    'prompt': prompt,
+                    'num_frames': 129,
+                    'num_inference_steps': 50
+                }
+            },
+            'wan': {
+                'name': 'Wan 2.1',
+                'id': 'zsxkib/wan:latest',
+                'input': {
+                    'prompt': prompt
+                }
+            },
+            'grok': {
+                'name': 'Grok Imagine',
+                'id': 'lucataco/grok-imagine:latest',
+                'input': {
+                    'prompt': prompt
+                }
+            }
+        }
+        
+        model_config = models.get(model, models['zeroscope'])
+        
+        print(f"Using model: {model_config['name']}")
+        
+        # Start prediction (async)
+        prediction = replicate.predictions.create(
+            version=model_config['id'].split(':')[1] if ':' in model_config['id'] else model_config['id'],
+            input=model_config['input']
+        )
+        
+        print(f"Prediction started: {prediction.id}")
+        
+        # Return prediction ID for polling
+        return jsonify({
+            "success": True,
+            "prediction_id": prediction.id,
+            "status": "processing",
+            "prompt": prompt,
+            "model": model_config['name'],
+            "info": "Video generation started. Poll /api/video-status/{prediction_id} for updates",
+            "estimated_time": "60-120 seconds"
+        }), 202
+        
+    except Exception as e:
+        error_msg = str(e)
+        print(f"Error starting video generation: {error_msg}")
+        import traceback
+        traceback.print_exc()
+        
+        return jsonify({
+            "error": "Failed to start video generation",
+            "message": error_msg
+        }), 500
+
+@app.route('/api/video-status/<prediction_id>', methods=['GET'])
+def video_status(prediction_id):
+    """Check status of video generation"""
+    try:
+        if not REPLICATE_API_TOKEN:
+            return jsonify({"error": "REPLICATE_API_TOKEN not configured"}), 500
+        
+        import replicate
+        
+        prediction = replicate.predictions.get(prediction_id)
+        
+        response = {
+            "prediction_id": prediction_id,
+            "status": prediction.status,
+        }
+        
+        if prediction.status == "succeeded":
+            # Get video URL from output
+            video_url = prediction.output
+            if isinstance(video_url, list):
+                video_url = video_url[0] if video_url else None
+            
+            response["video_url"] = video_url
+            response["success"] = True
+            
+        elif prediction.status == "failed":
+            response["error"] = prediction.error
+            response["success"] = False
+            
+        return jsonify(response), 200
+        
+    except Exception as e:
+        error_msg = str(e)
+        print(f"Error checking video status: {error_msg}")
+        return jsonify({
+            "error": "Failed to check status",
+            "message": error_msg
+        }), 500
 
 # Original video generation code - commented out because it times out on Render
 """

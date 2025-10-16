@@ -249,6 +249,7 @@
             subtext.textContent = `Generating with ${modelNames[model]}... (30-120 seconds)`;
 
             try {
+                // Start video generation
                 const res = await fetch(`${API}/api/generate-video`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -260,24 +261,19 @@
 
                 if (!res.ok) {
                     const error = await res.json();
-                    throw new Error(error.error || 'Generation failed');
+                    throw new Error(error.message || error.error || 'Generation failed');
                 }
 
-                subtext.textContent = 'Step 2: Creating MP4 video...';
                 const data = await res.json();
-
-                // Video URL is already a full URL from Replicate
-                currentVideoUrl = data.video_url;
                 
-                console.log('Video URL:', currentVideoUrl);
-                
-                // Show video
-                const video = document.getElementById('videoPlayer');
-                video.src = currentVideoUrl;
-                output.classList.add('show');
-
-                loading.classList.remove('show');
-                showToast('✅ Video generated successfully!');
+                if (data.prediction_id) {
+                    // Poll for status
+                    subtext.textContent = 'Processing... This takes 60-120 seconds';
+                    await pollVideoStatus(data.prediction_id);
+                } else if (data.video_url) {
+                    // Direct video URL (demo mode)
+                    displayVideo(data.video_url);
+                }
 
             } catch (e) {
                 loading.classList.remove('show');
@@ -287,6 +283,56 @@
                 btn.disabled = false;
                 btn.textContent = '🎬 Generate Video';
             }
+        }
+
+        async function pollVideoStatus(predictionId) {
+            const maxAttempts = 60; // 60 attempts * 2 seconds = 2 minutes
+            let attempts = 0;
+            
+            while (attempts < maxAttempts) {
+                try {
+                    const res = await fetch(`${API}/api/video-status/${predictionId}`);
+                    const data = await res.json();
+                    
+                    console.log('Status:', data.status);
+                    
+                    if (data.status === 'succeeded' && data.video_url) {
+                        displayVideo(data.video_url);
+                        return;
+                    } else if (data.status === 'failed') {
+                        throw new Error(data.error || 'Video generation failed');
+                    }
+                    
+                    // Update progress
+                    const elapsed = attempts * 2;
+                    document.getElementById('loadingSubtext').textContent = 
+                        `Processing... ${elapsed}s elapsed (usually takes 60-120s)`;
+                    
+                    // Wait 2 seconds before next poll
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    attempts++;
+                    
+                } catch (e) {
+                    console.error('Polling error:', e);
+                    throw e;
+                }
+            }
+            
+            throw new Error('Video generation timed out');
+        }
+
+        function displayVideo(videoUrl) {
+            currentVideoUrl = videoUrl;
+            console.log('Video URL:', currentVideoUrl);
+            
+            const video = document.getElementById('videoPlayer');
+            const output = document.getElementById('videoOutput');
+            const loading = document.getElementById('loading');
+            
+            video.src = currentVideoUrl;
+            output.classList.add('show');
+            loading.classList.remove('show');
+            showToast('✅ Video generated successfully!');
         }
 
         function downloadVideo() {
