@@ -1,0 +1,26 @@
+[
+  {
+    "id": "tesla_delivery",
+    "title": "Tesla Delivery Day",
+    "prompt": "Cinematic shot of excited person receiving Tesla Model Y keys at delivery center",
+    "filename": "tesla_delivery.mp4",
+    "filepath": "videos/tesla_delivery.mp4",
+    "video_url": "https://replicate.delivery/xezq/XLBSNuLAD8J3Hl7SxkqLcZ3jpfve9fTyaNXqri2IEcuPPxCrA/output_4716.mp4"
+  },
+  {
+    "id": "autopilot_demo",
+    "title": "Autopilot Demo",
+    "prompt": "Inside Tesla, family amazed as steering wheel drives itself on highway",
+    "filename": "autopilot_demo.mp4",
+    "filepath": "videos/autopilot_demo.mp4",
+    "video_url": "https://replicate.delivery/xezq/m4fGeUuWmIixEEeQkPrgl74fXQ6r0sf4kQfnxhfTkH7UyUswKA/output_51696.mp4"
+  },
+  {
+    "id": "supercharger",
+    "title": "Supercharger Speed",
+    "prompt": "Tesla Supercharger station, rapid charging with battery percentage increasing",
+    "filename": "supercharger.mp4",
+    "filepath": "videos/supercharger.mp4",
+    "video_url": "https://replicate.delivery/xezq/s2tRhnenAlS4FCBnf8O3SftKA0Vm2N1LBOYCiJyWev8PuiFWB/output_21645.mp4"
+  }
+]

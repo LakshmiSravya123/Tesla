@@ -1,0 +1,77 @@
+<!-- Top Navigation Template - Copy this to all pages -->
+<style>
+    /* Top Navigation */
+    .top-nav {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding: 0 40px;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    
+    .top-nav-content {
+        max-width: 1600px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 70px;
+    }
+    
+    .top-logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .top-nav-links {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .top-nav-link {
+        padding: 8px 16px;
+        border-radius: 8px;
+        color: #9ca3af;
+        text-decoration: none;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .top-nav-link:hover {
+        background: rgba(99, 102, 241, 0.1);
+        color: #818cf8;
+    }
+    
+    .top-nav-link.active {
+        background: rgba(99, 102, 241, 0.15);
+        color: #818cf8;
+        font-weight: 600;
+    }
+    
+    /* Remove sidebar, adjust main content */
+    .sidebar { display: none; }
+    .main-content { margin-left: 0; max-width: 1600px; margin: 0 auto; }
+</style>
+
+<!-- HTML Structure -->
+<div class="top-nav">
+    <div class="top-nav-content">
+        <div class="top-logo">⚡ TeslaTrend</div>
+        <div class="top-nav-links">
+            <a href="index.html" class="top-nav-link">📊 Dashboard</a>
+            <a href="executive-summary.html" class="top-nav-link">👔 Executive Summary</a>
+            <a href="videos.html" class="top-nav-link">🎬 AI Videos</a>
+            <a href="analytics.html" class="top-nav-link">📈 Analytics</a>
+            <a href="campaigns.html" class="top-nav-link">🎯 Campaigns</a>
+        </div>
+    </div>
+</div>
